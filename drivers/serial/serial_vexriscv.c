@@ -2,6 +2,7 @@
 /*
  * Copyright (C) 2019 roman3017 <rbacik@hotmail.com>
  */
+/* #define DEBUG */
 
 #include <common.h>
 #include <clk.h>
@@ -10,6 +11,8 @@
 #include <errno.h>
 #include <fdtdec.h>
 #include <serial.h>
+
+DECLARE_GLOBAL_DATA_PTR;
 
 #define STATUS_TX 16
 #define STATUS_RX 24
@@ -22,6 +25,25 @@ struct vexriscv_uart_regs {
 	u32 div;
 	u32 frame;
 };
+
+struct vexriscv_uart_platdata {
+	struct vexriscv_uart_regs *regs;
+  int baudrate;
+};
+
+static unsigned get_ofclock_rate(struct udevice *dev)
+{
+  unsigned rate;
+	int ret;
+
+  rate = 0;
+  ret = dev_read_u32(dev, "clock-frequency", &rate);
+	if (IS_ERR_VALUE(ret)) {
+		debug("Timer clock-frequency not defined\n");
+	}
+
+  return rate;
+}
 
 static void set_div(struct vexriscv_uart_regs *regs, int freq, int baudrate)
 {
@@ -36,43 +58,13 @@ static void set_frame(struct vexriscv_uart_regs *regs, int par, int bits, int st
   writel((bits << 0) | (par << 8) | (stop << 16), &regs->frame);
 }
 
-#ifdef CONFIG_DEBUG_UART_VEXRISCV
-static inline void _debug_uart_init(void)
-{
-	struct vexriscv_uart_regs *regs;
-
-  regs = (struct vexriscv_uart_regs *)CONFIG_DEBUG_UART_BASE;
-	set_div(regs, CONFIG_DEBUG_UART_CLOCK, CONFIG_BAUDRATE);
-	set_frame(regs, 0, 7, 0);
-}
-
-static inline void _debug_uart_putc(int ch)
-{
-	struct vexriscv_uart_regs *regs;
-
-  regs = (struct vexriscv_uart_regs *)CONFIG_DEBUG_UART_BASE;
-	while (0 == ((readl(&regs->status)>>STATUS_TX) & 0xff))
-		;
-	writel(ch, &regs->data);
-}
-
-DEBUG_UART_FUNCS
-
-#endif /* CONFIG_DEBUG_UART_VEXRISCV */
-
-struct vexriscv_uart_platdata {
-	struct vexriscv_uart_regs *regs;
-	u32 clock;
-  u32 baudrate;
-};
-
 static int vexriscv_setbrg(struct udevice *dev, int baudrate)
 {
 	struct vexriscv_uart_platdata *platdata;
   int freq;
 
   platdata = dev_get_platdata(dev);
-	freq = platdata->clock;
+	freq = get_ofclock_rate(dev);
   set_div(platdata->regs, freq, baudrate);
   platdata->baudrate = baudrate;
 	return 0;
@@ -147,35 +139,24 @@ static int vexriscv_getinfo(struct udevice *dev, struct serial_device_info *info
   return 0;
 }
 
-#if CONFIG_IS_ENABLED(OF_CONTROL) && !CONFIG_IS_ENABLED(OF_PLATDATA)
+
 static int vexriscv_ofdata_to_platdata(struct udevice *dev)
 {
 	struct vexriscv_uart_platdata *platdata;
 
   platdata = dev_get_platdata(dev);
-	platdata->regs = (void *)dev_read_addr(dev);
+	platdata->regs = (struct vexriscv_uart_regs *)dev_read_addr(dev);
 	if (IS_ERR(platdata->regs))
 		return PTR_ERR(platdata->regs);
-	if (IS_ERR_VALUE(dev_read_u32(dev, "clock-frequency", &platdata->clock))) {
-		debug("Timer clock-frequency not defined\n");
-	}
 	return 0;
 }
-#endif /* OF_CONTROL && !OF_PLATDATA */
 
 static int vexriscv_probe(struct udevice *dev)
 {
   UNUSED(dev);
-	debug("!!!%s:%d\n",__func__,__LINE__);
 	return 0;
 }
 
-static int vexriscv_bind(struct udevice *dev)
-{
-  UNUSED(dev);
-	debug("!!!%s:%d\n",__func__,__LINE__);
-	return 0;
-}
 static const struct dm_serial_ops vexriscv_ops = {
 	.setbrg = vexriscv_setbrg,
 	.getc = vexriscv_getc,
@@ -187,37 +168,41 @@ static const struct dm_serial_ops vexriscv_ops = {
   .getinfo = vexriscv_getinfo,
 };
 
-#if CONFIG_IS_ENABLED(OF_CONTROL) && !CONFIG_IS_ENABLED(OF_PLATDATA)
 static const struct udevice_id vexriscv_of_match[] = {
-	{ .compatible = "vexriscv,uart" },
+	{ .compatible = "vexriscv,uart0" },
 	{ }
 };
-#endif /* OF_CONTROL && !OF_PLATDATA */
 
-U_BOOT_DRIVER(vexriscv_serial) = {
-	.name	= "vexriscv_serial",
+U_BOOT_DRIVER(serial_vexriscv) = {
+	.name	= "serial_vexriscv",
 	.id	= UCLASS_SERIAL,
-#if CONFIG_IS_ENABLED(OF_CONTROL) && !CONFIG_IS_ENABLED(OF_PLATDATA)
 	.of_match = vexriscv_of_match,
 	.ofdata_to_platdata = vexriscv_ofdata_to_platdata,
 	.platdata_auto_alloc_size = sizeof(struct vexriscv_uart_platdata),
-#endif
-	.bind = vexriscv_bind,
 	.probe = vexriscv_probe,
 	.ops	= &vexriscv_ops,
-#if !CONFIG_IS_ENABLED(OF_CONTROL)
-	.flags	= DM_FLAG_PRE_RELOC,
-#endif
 };
 
-#if !CONFIG_IS_ENABLED(OF_CONTROL) || CONFIG_IS_ENABLED(OF_PLATDATA)
-static const struct vexriscv_uart_platdata vexriscv_serial_info_non_fdt = {
-  .regs = (void *)CONFIG_DEBUG_UART_BASE,
-  .baudrate = CONFIG_BAUDRATE,
-	.clock = CONFIG_DEBUG_UART_CLOCK,
-};
-U_BOOT_DEVICE(vexriscv_serial_non_fdt) = {
-  .name = "vexriscv_serial",
-  .platdata = &vexriscv_serial_info_non_fdt,
-};
-#endif /*!CONFIG_IS_ENABLED(OF_CONTROL) || CONFIG_IS_ENABLED(OF_PLATDATA)*/
+#ifdef CONFIG_DEBUG_UART_VEXRISCV
+static inline void _debug_uart_init(void)
+{
+	struct vexriscv_uart_regs *regs;
+
+  regs = (struct vexriscv_uart_regs *)CONFIG_DEBUG_UART_BASE;
+	set_div(regs, CONFIG_DEBUG_UART_CLOCK, CONFIG_BAUDRATE);
+	set_frame(regs, 0, 7, 0);
+}
+
+static inline void _debug_uart_putc(int ch)
+{
+	struct vexriscv_uart_regs *regs;
+
+  regs = (struct vexriscv_uart_regs *)CONFIG_DEBUG_UART_BASE;
+	while (0 == ((readl(&regs->status)>>STATUS_TX) & 0xff))
+		;
+	writel(ch, &regs->data);
+}
+
+DEBUG_UART_FUNCS
+
+#endif
