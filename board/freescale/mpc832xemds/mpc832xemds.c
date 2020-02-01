@@ -6,6 +6,8 @@
  */
 
 #include <common.h>
+#include <fdt_support.h>
+#include <init.h>
 #include <ioports.h>
 #include <mpc83xx.h>
 #include <i2c.h>
@@ -21,6 +23,7 @@
 #if defined(CONFIG_PQ_MDS_PIB)
 #include "../common/pq-mds-pib.h"
 #endif
+#include <linux/delay.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

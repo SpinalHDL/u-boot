@@ -7,13 +7,21 @@
 
 #include <common.h>
 #include <command.h>
+#include <cpu_func.h>
 #include <dm.h>
 #include <elf.h>
 #include <efi_loader.h>
+#include <log.h>
+#include <malloc.h>
 #include <rtc.h>
+#include <u-boot/crc.h>
 
 /* For manual relocation support */
 DECLARE_GLOBAL_DATA_PTR;
+
+/* GUID of the runtime properties table */
+static const efi_guid_t efi_rt_properties_table_guid =
+				EFI_RT_PROPERTIES_TABLE_GUID;
 
 struct efi_runtime_mmio_list {
 	struct list_head link;
@@ -91,9 +99,28 @@ static __efi_runtime_data efi_uintn_t efi_descriptor_size;
  * handle a good number of runtime callbacks
  */
 
+/**
+ * efi_init_runtime_supported() - create runtime properties table
+ *
+ * Create a configuration table specifying which services are available at
+ * runtime.
+ *
+ * Return:	status code
+ */
 efi_status_t efi_init_runtime_supported(void)
 {
-	u16 efi_runtime_services_supported =
+	efi_status_t ret;
+	struct efi_rt_properties_table *rt_table;
+
+	ret = efi_allocate_pool(EFI_RUNTIME_SERVICES_DATA,
+				sizeof(struct efi_rt_properties_table),
+				(void **)&rt_table);
+	if (ret != EFI_SUCCESS)
+		return ret;
+
+	rt_table->version = EFI_RT_PROPERTIES_TABLE_VERSION;
+	rt_table->length = sizeof(struct efi_rt_properties_table);
+	rt_table->runtime_services_supported =
 				EFI_RT_SUPPORTED_SET_VIRTUAL_ADDRESS_MAP |
 				EFI_RT_SUPPORTED_CONVERT_POINTER;
 
@@ -102,15 +129,12 @@ efi_status_t efi_init_runtime_supported(void)
 	 * as well as efi_runtime_services.
 	 */
 #ifdef CONFIG_EFI_HAVE_RUNTIME_RESET
-	efi_runtime_services_supported |= EFI_RT_SUPPORTED_RESET_SYSTEM;
+	rt_table->runtime_services_supported |= EFI_RT_SUPPORTED_RESET_SYSTEM;
 #endif
 
-	return EFI_CALL(efi_set_variable(L"RuntimeServicesSupported",
-					 &efi_global_variable_guid,
-					 EFI_VARIABLE_BOOTSERVICE_ACCESS |
-					 EFI_VARIABLE_RUNTIME_ACCESS,
-					 sizeof(efi_runtime_services_supported),
-					 &efi_runtime_services_supported));
+	ret = efi_install_configuration_table(&efi_rt_properties_table_guid,
+					      rt_table);
+	return ret;
 }
 
 /**
@@ -460,7 +484,7 @@ static __efi_runtime efi_status_t EFIAPI efi_convert_pointer_runtime(
 }
 
 /**
- * efi_convert_pointer_runtime() - convert from physical to virtual pointer
+ * efi_convert_pointer() - convert from physical to virtual pointer
  *
  * This function implements the ConvertPointer() runtime service until
  * the first call to SetVirtualAddressMap().
@@ -470,7 +494,7 @@ static __efi_runtime efi_status_t EFIAPI efi_convert_pointer_runtime(
  *
  * @debug_disposition:	indicates if pointer may be converted to NULL
  * @address:		pointer to be converted
- * Return:		status code EFI_UNSUPPORTED
+ * Return:		status code
  */
 static __efi_runtime efi_status_t EFIAPI efi_convert_pointer(
 			efi_uintn_t debug_disposition, void **address)
@@ -761,11 +785,10 @@ out:
 efi_status_t efi_add_runtime_mmio(void *mmio_ptr, u64 len)
 {
 	struct efi_runtime_mmio_list *newmmio;
-	u64 pages = (len + EFI_PAGE_MASK) >> EFI_PAGE_SHIFT;
 	uint64_t addr = *(uintptr_t *)mmio_ptr;
 	efi_status_t ret;
 
-	ret = efi_add_memory_map(addr, pages, EFI_MMAP_IO, false);
+	ret = efi_add_memory_map(addr, len, EFI_MMAP_IO);
 	if (ret != EFI_SUCCESS)
 		return EFI_OUT_OF_RESOURCES;
 

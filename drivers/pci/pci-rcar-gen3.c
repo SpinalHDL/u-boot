@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <pci.h>
 #include <wait_bit.h>
+#include <linux/bitops.h>
 
 #define PCIECAR			0x000010
 #define PCIECCTLR		0x000018
@@ -143,7 +144,7 @@ static void rcar_rmw32(struct udevice *dev, int where, u32 mask, u32 data)
 			mask << shift, data << shift);
 }
 
-static u32 rcar_read_conf(struct udevice *dev, int where)
+static u32 rcar_read_conf(const struct udevice *dev, int where)
 {
 	struct rcar_gen3_pcie_priv *priv = dev_get_platdata(dev);
 	int shift = 8 * (where & 3);
@@ -151,7 +152,7 @@ static u32 rcar_read_conf(struct udevice *dev, int where)
 	return readl(priv->regs + (where & ~3)) >> shift;
 }
 
-static int rcar_pcie_config_access(struct udevice *udev,
+static int rcar_pcie_config_access(const struct udevice *udev,
 				   unsigned char access_type,
 				   pci_dev_t bdf, int where, ulong *data)
 {
@@ -204,7 +205,7 @@ static int rcar_gen3_pcie_addr_valid(pci_dev_t d, uint where)
 	return 0;
 }
 
-static int rcar_gen3_pcie_read_config(struct udevice *dev, pci_dev_t bdf,
+static int rcar_gen3_pcie_read_config(const struct udevice *dev, pci_dev_t bdf,
 				      uint where, ulong *val,
 				      enum pci_size_t size)
 {

@@ -9,6 +9,7 @@
 #include <common.h>
 #include <dm.h>
 #include <errno.h>
+#include <log.h>
 #include <memalign.h>
 #include <usb.h>
 #include <dm/device-internal.h>
@@ -21,6 +22,17 @@ static bool asynch_allowed;
 struct usb_uclass_priv {
 	int companion_device_count;
 };
+
+int usb_lock_async(struct usb_device *udev, int lock)
+{
+	struct udevice *bus = udev->controller_dev;
+	struct dm_usb_ops *ops = usb_get_ops(bus);
+
+	if (!ops->lock_async)
+		return -ENOSYS;
+
+	return ops->lock_async(bus, lock);
+}
 
 int usb_disable_asynch(int disable)
 {

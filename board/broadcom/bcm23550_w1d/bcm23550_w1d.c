@@ -4,6 +4,8 @@
  */
 
 #include <common.h>
+#include <init.h>
+#include <log.h>
 #include <asm/io.h>
 #include <asm/mach-types.h>
 #include <env.h>

@@ -54,9 +54,6 @@
  * memtest works on 8 MB in DRAM after skipping 32MB from
  * start addr of ram disk
  */
-#define CONFIG_SYS_MEMTEST_START	(PHYS_DRAM_1 + (64 * 1024 * 1024))
-#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START \
-					+ (8 * 1024 * 1024))
 
 #define CONFIG_SYS_LOAD_ADDR		0x81000000 /* Default load address */
 
@@ -172,10 +169,6 @@
  * 0xE0000 - 0x442000 : Linux Kernel
  * 0x442000 - 0x800000 : Userland
  */
-#if defined(CONFIG_SPI_BOOT)
-# define CONFIG_ENV_OFFSET		(892 << 10) /* 892 KiB in */
-# define CONFIG_ENV_SECT_SIZE		(4 << 10) /* 4 KB sectors */
-#endif /* SPI support */
 
 #define CONFIG_BOOTP_DEFAULT
 #define CONFIG_BOOTP_DNS2
@@ -183,7 +176,7 @@
 #define CONFIG_NET_RETRY_COUNT         10
 
 /* NAND support */
-#ifdef CONFIG_NAND
+#ifdef CONFIG_MTD_RAW_NAND
 /* UBI Support */
 
 /* Commen environment */

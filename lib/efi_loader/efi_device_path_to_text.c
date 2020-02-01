@@ -6,6 +6,7 @@
  */
 
 #include <common.h>
+#include <blk.h>
 #include <efi_loader.h>
 
 #define MAC_OUTPUT_LEN 22
@@ -145,6 +146,31 @@ static char *dp_msging(char *s, struct efi_device_path *dp)
 			ucdp->vendor_id, ucdp->product_id,
 			ucdp->device_class, ucdp->device_subclass,
 			ucdp->device_protocol);
+
+		break;
+	}
+	case DEVICE_PATH_SUB_TYPE_MSG_SATA: {
+		struct efi_device_path_sata *sdp =
+			(struct efi_device_path_sata *) dp;
+
+		s += sprintf(s, "Sata(0x%x,0x%x,0x%x)",
+			     sdp->hba_port,
+			     sdp->port_multiplier_port,
+			     sdp->logical_unit_number);
+		break;
+	}
+	case DEVICE_PATH_SUB_TYPE_MSG_NVME: {
+		struct efi_device_path_nvme *ndp =
+			(struct efi_device_path_nvme *)dp;
+		u32 ns_id;
+		int i;
+
+		memcpy(&ns_id, &ndp->ns_id, sizeof(ns_id));
+		s += sprintf(s, "NVMe(0x%x,", ns_id);
+		for (i = 0; i < sizeof(ndp->eui64); ++i)
+			s += sprintf(s, "%s%02x", i ? "-" : "",
+				     ndp->eui64[i]);
+		s += sprintf(s, ")");
 
 		break;
 	}

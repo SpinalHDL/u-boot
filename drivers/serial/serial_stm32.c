@@ -7,12 +7,16 @@
 #include <common.h>
 #include <clk.h>
 #include <dm.h>
+#include <log.h>
 #include <reset.h>
 #include <serial.h>
 #include <watchdog.h>
 #include <asm/io.h>
 #include <asm/arch/stm32.h>
+#include <linux/bitops.h>
+#include <linux/delay.h>
 #include "serial_stm32.h"
+#include <dm/device_compat.h>
 
 static void _stm32_serial_setbrg(fdt_addr_t base,
 				 struct stm32_uart_info *uart_info,

@@ -5,7 +5,9 @@
  */
 
 #include <common.h>
+#include <bootstage.h>
 #include <command.h>
+#include <cpu_func.h>
 #include <env.h>
 #include <u-boot/zlib.h>
 #include <asm/byteorder.h>

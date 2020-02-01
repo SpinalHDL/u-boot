@@ -8,8 +8,11 @@
  */
 
 #include <common.h>
+#include <fdt_support.h>
+#include <init.h>
 #include <ioports.h>
 #include <mpc83xx.h>
+#include <asm/bitops.h>
 #include <asm/mpc8349_pci.h>
 #include <i2c.h>
 #include <spd_sdram.h>
@@ -17,6 +20,7 @@
 #if defined(CONFIG_OF_LIBFDT)
 #include <linux/libfdt.h>
 #endif
+#include <linux/delay.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

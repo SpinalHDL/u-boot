@@ -4,6 +4,10 @@
  * Lukas Auer <lukas.auer@aisec.fraunhofer.de>
  */
 #include <common.h>
+#include <cpu_func.h>
+#include <hang.h>
+#include <init.h>
+#include <log.h>
 #include <spl.h>
 #include <asm/smp.h>
 
@@ -39,8 +43,8 @@ void __noreturn jump_to_image_no_args(struct spl_image_info *spl_image)
 	invalidate_icache_all();
 
 	debug("image entry point: 0x%lX\n", spl_image->entry_point);
-#ifdef CONFIG_SMP
-	ret = smp_call_function(spl_image->entry_point, (ulong)fdt_blob, 0);
+#ifdef CONFIG_SPL_SMP
+	ret = smp_call_function(spl_image->entry_point, (ulong)fdt_blob, 0, 0);
 	if (ret)
 		hang();
 #endif

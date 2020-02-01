@@ -37,16 +37,12 @@
 
 /* turn on command-line edit/c/auto */
 
-#define CONFIG_ENV_SIZE		8192
-
 /* SPI - enable all SPI flash types for testing purposes */
 
 #define CONFIG_I2C_EDID
 
 /* Memory things - we don't really want a memory test */
 #define CONFIG_SYS_LOAD_ADDR		0x00000000
-#define CONFIG_SYS_MEMTEST_START	0x00100000
-#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + 0x1000)
 #define CONFIG_SYS_FDT_LOAD_ADDR	        0x100
 
 #define CONFIG_PHYSMEM
@@ -117,9 +113,6 @@
 	SANDBOX_ETH_SETTINGS \
 	BOOTENV \
 	MEM_LAYOUT_ENV_SETTINGS
-
-#define CONFIG_GZIP_COMPRESSED
-#define CONFIG_BZIP2
 
 #ifndef CONFIG_SPL_BUILD
 #define CONFIG_SYS_IDE_MAXBUS		1

@@ -11,9 +11,12 @@
 #include <asm/gpio.h>
 #include <dm/device.h>
 #include <dm/device-internal.h>
+#include <dm/device_compat.h>
 #include <dm/lists.h>
 #include <dm/pinctrl.h>
 #include <linux/bitfield.h>
+#include <linux/bitops.h>
+#include <linux/delay.h>
 #include <power/regulator.h>
 
 /* STMFX pins = GPIO[15:0] + aGPIO[7:0] */
@@ -351,11 +354,12 @@ static int stmfx_chip_init(struct udevice *dev)
 	int ret;
 	struct dm_i2c_chip *chip = dev_get_parent_platdata(dev);
 
-	id = dm_i2c_reg_read(dev, STMFX_REG_CHIP_ID);
-	if (id < 0) {
-		dev_err(dev, "error reading chip id: %d\n", id);
+	ret = dm_i2c_reg_read(dev, STMFX_REG_CHIP_ID);
+	if (ret < 0) {
+		dev_err(dev, "error reading chip id: %d\n", ret);
 		return ret;
 	}
+	id = (u8)ret;
 	/*
 	 * Check that ID is the complement of the I2C address:
 	 * STMFX I2C address follows the 7-bit format (MSB), that's why

@@ -2,16 +2,14 @@
 # Copyright (c) 2011 The Chromium OS Authors.
 #
 
-from __future__ import print_function
-
 import itertools
 import os
 
-import get_maintainer
-import gitutil
-import settings
-import terminal
-import tools
+from patman import get_maintainer
+from patman import gitutil
+from patman import settings
+from patman import terminal
+from patman import tools
 
 # Series-xxx tags that we understand
 valid_series = ['to', 'cc', 'version', 'changes', 'prefix', 'notes', 'name',
@@ -223,7 +221,7 @@ class Series(dict):
         col = terminal.Color()
         # Look for commit tags (of the form 'xxx:' at the start of the subject)
         fname = '/tmp/patman.%d' % os.getpid()
-        fd = open(fname, 'w')
+        fd = open(fname, 'w', encoding='utf-8')
         all_ccs = []
         for commit in self.commits:
             cc = []
@@ -243,15 +241,17 @@ class Series(dict):
             if limit is not None:
                 cc = cc[:limit]
             all_ccs += cc
-            print(commit.patch, ', '.join(sorted(set(cc))), file=fd)
+            print(commit.patch, '\0'.join(sorted(set(cc))), file=fd)
             self._generated_cc[commit.patch] = cc
 
         if cover_fname:
             cover_cc = gitutil.BuildEmailList(self.get('cover_cc', ''))
             cover_cc = [tools.FromUnicode(m) for m in cover_cc]
-            cc_list = ', '.join([tools.ToUnicode(x)
-                                 for x in sorted(set(cover_cc + all_ccs))])
-            print(cover_fname, cc_list.encode('utf-8'), file=fd)
+            cover_cc = list(set(cover_cc + all_ccs))
+            if limit is not None:
+                cover_cc = cover_cc[:limit]
+            cc_list = '\0'.join([tools.ToUnicode(x) for x in sorted(cover_cc)])
+            print(cover_fname, cc_list, file=fd)
 
         fd.close()
         return fname

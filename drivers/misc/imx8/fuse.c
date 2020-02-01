@@ -15,8 +15,13 @@ DECLARE_GLOBAL_DATA_PTR;
 #define FSL_ECC_WORD_START_1	 0x10
 #define FSL_ECC_WORD_END_1	 0x10F
 
+#ifdef CONFIG_IMX8QM
+#define FSL_ECC_WORD_START_2	 0x1A0
+#define FSL_ECC_WORD_END_2	 0x1FF
+#elif defined(CONFIG_IMX8QXP)
 #define FSL_ECC_WORD_START_2	 0x220
 #define FSL_ECC_WORD_END_2	 0x31F
+#endif
 
 #define FSL_QXP_FUSE_GAP_START	 0x110
 #define FSL_QXP_FUSE_GAP_END	 0x21F
@@ -74,7 +79,7 @@ int fuse_prog(u32 bank, u32 word, u32 val)
 	}
 
 	return call_imx_sip(FSL_SIP_OTP_WRITE, (unsigned long)word,
-			    (unsigned long)val, 0);
+			    (unsigned long)val, 0, 0);
 }
 
 int fuse_override(u32 bank, u32 word, u32 val)

@@ -5,3 +5,21 @@
 
 #include "rk3399-u-boot.dtsi"
 #include "rk3399-sdram-lpddr3-4GB-1600.dtsi"
+
+/ {
+	chosen {
+		u-boot,spl-boot-order = &sdhci, &sdmmc;
+	};
+};
+
+&rng {
+	status = "okay";
+};
+
+&i2c0 {
+	u-boot,dm-pre-reloc;
+};
+
+&rk808 {
+	u-boot,dm-pre-reloc;
+};

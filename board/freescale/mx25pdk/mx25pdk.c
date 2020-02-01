@@ -6,6 +6,7 @@
  */
 
 #include <common.h>
+#include <init.h>
 #include <asm/io.h>
 #include <asm/gpio.h>
 #include <asm/arch/imx-regs.h>
@@ -14,6 +15,7 @@
 #include <mmc.h>
 #include <fsl_esdhc_imx.h>
 #include <i2c.h>
+#include <linux/delay.h>
 #include <power/pmic.h>
 #include <fsl_pmic.h>
 #include <mc34704.h>

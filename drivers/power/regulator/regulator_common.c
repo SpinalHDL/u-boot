@@ -6,6 +6,8 @@
 
 #include "regulator_common.h"
 #include <common.h>
+#include <log.h>
+#include <linux/delay.h>
 #include <power/regulator.h>
 
 int regulator_common_ofdata_to_platdata(struct udevice *dev,
@@ -15,8 +17,8 @@ int regulator_common_ofdata_to_platdata(struct udevice *dev,
 	int flags = GPIOD_IS_OUT;
 	int ret;
 
-	if (dev_read_bool(dev, "enable-active-high"))
-		flags |= GPIOD_IS_OUT_ACTIVE;
+	if (!dev_read_bool(dev, "enable-active-high"))
+		flags |= GPIOD_ACTIVE_LOW;
 
 	/* Get optional enable GPIO desc */
 	gpio = &dev_pdata->gpio;
@@ -32,7 +34,11 @@ int regulator_common_ofdata_to_platdata(struct udevice *dev,
 	dev_pdata->startup_delay_us = dev_read_u32_default(dev,
 							"startup-delay-us", 0);
 	dev_pdata->off_on_delay_us =
+		dev_read_u32_default(dev, "off-on-delay-us", 0);
+	if (!dev_pdata->off_on_delay_us) {
+		dev_pdata->off_on_delay_us =
 			dev_read_u32_default(dev, "u-boot,off-on-delay-us", 0);
+	}
 
 	return 0;
 }

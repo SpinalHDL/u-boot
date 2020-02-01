@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0+
 /*
- * Copyright 2018-2019 NXP
+ * Copyright 2018-2020 NXP
  */
 
 #include <common.h>
+#include <clock_legacy.h>
 #include <dm.h>
+#include <init.h>
 #include <dm/platform_data/serial_pl01x.h>
 #include <i2c.h>
 #include <malloc.h>
@@ -14,6 +16,7 @@
 #include <fsl_sec.h>
 #include <asm/io.h>
 #include <fdt_support.h>
+#include <linux/bitops.h>
 #include <linux/libfdt.h>
 #include <fsl-mc/fsl_mc.h>
 #include <env_internal.h>
@@ -27,6 +30,7 @@
 #include "../common/qixis.h"
 #include "../common/vid.h"
 #include <fsl_immap.h>
+#include <asm/arch-fsl-layerscape/fsl_icid.h>
 
 #ifdef CONFIG_EMC2305
 #include "../common/emc2305.h"
@@ -127,10 +131,10 @@ int board_fix_fdt(void *fdt)
 		char *old_str;
 		char *new_str;
 	} reg_names_map[] = {
-		{ "ccsr", "dip" },
+		{ "ccsr", "dbi" },
 		{ "pf_ctrl", "ctrl" }
 	};
-	int off = -1, i;
+	int off = -1, i = 0;
 
 	if (IS_SVR_REV(get_svr(), 1, 0))
 		return 0;
@@ -147,7 +151,8 @@ int board_fix_fdt(void *fdt)
 
 		reg_name = reg_names;
 		remaining_names_len = names_len - (reg_name - reg_names);
-		for (i = 0; (i < ARRAY_SIZE(reg_names_map)) && names_len; i++) {
+		i = 0;
+		while ((i < ARRAY_SIZE(reg_names_map)) && remaining_names_len) {
 			old_name_len = strlen(reg_names_map[i].old_str);
 			new_name_len = strlen(reg_names_map[i].new_str);
 			if (memcmp(reg_name, reg_names_map[i].old_str,
@@ -163,6 +168,7 @@ int board_fix_fdt(void *fdt)
 				       new_name_len);
 				names_len -= old_name_len;
 				names_len += new_name_len;
+				i++;
 			}
 
 			reg_name = memchr(reg_name, '\0', remaining_names_len);
@@ -189,9 +195,9 @@ void esdhc_dspi_status_fixup(void *blob)
 {
 	const char esdhc0_path[] = "/soc/esdhc@2140000";
 	const char esdhc1_path[] = "/soc/esdhc@2150000";
-	const char dspi0_path[] = "/soc/dspi@2100000";
-	const char dspi1_path[] = "/soc/dspi@2110000";
-	const char dspi2_path[] = "/soc/dspi@2120000";
+	const char dspi0_path[] = "/soc/spi@2100000";
+	const char dspi1_path[] = "/soc/spi@2110000";
+	const char dspi2_path[] = "/soc/spi@2120000";
 
 	struct ccsr_gur __iomem *gur = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
 	u32 sdhc1_base_pmux;
@@ -241,10 +247,12 @@ void esdhc_dspi_status_fixup(void *blob)
 		& FSL_CHASSIS3_IIC5_PMUX_MASK;
 	iic5_pmux >>= FSL_CHASSIS3_IIC5_PMUX_SHIFT;
 
-	if (iic5_pmux == IIC5_PMUX_SPI3) {
+	if (iic5_pmux == IIC5_PMUX_SPI3)
 		do_fixup_by_path(blob, dspi2_path, "status", "okay",
 				 sizeof("okay"), 1);
-	}
+	else
+		do_fixup_by_path(blob, dspi2_path, "status", "disabled",
+				 sizeof("disabled"), 1);
 }
 #endif
 
@@ -269,7 +277,14 @@ int i2c_multiplexer_select_vid_channel(u8 channel)
 
 int init_func_vid(void)
 {
-	if (adjust_vdd(0) < 0)
+	int set_vid;
+
+	if (IS_SVR_REV(get_svr(), 1, 0))
+		set_vid = adjust_vdd(800);
+	else
+		set_vid = adjust_vdd(0);
+
+	if (set_vid < 0)
 		printf("core voltage not adjusted\n");
 
 	return 0;
@@ -301,6 +316,8 @@ int checkboard(void)
 
 	if (src == BOOT_SOURCE_SD_MMC) {
 		puts("SD\n");
+	} else if (src == BOOT_SOURCE_SD_MMC2) {
+		puts("eMMC\n");
 	} else {
 		sw = QIXIS_READ(brdcfg[0]);
 		sw = (sw >> QIXIS_XMAP_SHIFT) & QIXIS_XMAP_MASK;
@@ -462,10 +479,16 @@ int config_board_mux(void)
 		reg11 = SET_CFG_MUX3_SDHC1_SPI(reg11, 0x01);
 		QIXIS_WRITE(brdcfg[11], reg11);
 	} else {
-		/*  Routes {SDHC1_DAT4} to SDHC1 adapter slot */
+		/*
+		 * If {SDHC1_DAT4} has been configured to route to SDHC1_VS,
+		 * do not change it.
+		 * Otherwise route {SDHC1_DAT4} to SDHC1 adapter slot.
+		 */
 		reg11 = QIXIS_READ(brdcfg[11]);
-		reg11 = SET_CFG_MUX2_SDHC1_SPI(reg11, 0x00);
-		QIXIS_WRITE(brdcfg[11], reg11);
+		if ((reg11 & 0x30) != 0x30) {
+			reg11 = SET_CFG_MUX2_SDHC1_SPI(reg11, 0x00);
+			QIXIS_WRITE(brdcfg[11], reg11);
+		}
 
 		/* - Routes {SDHC1_DAT5, SDHC1_DAT6} to SDHC1 adapter slot.
 		 * {SDHC1_DAT7, SDHC1_DS } to SDHC1 adapter slot.
@@ -563,6 +586,9 @@ int board_init(void)
 	sec_init();
 #endif
 
+#if !defined(CONFIG_SYS_EARLY_PCI_INIT) && defined(CONFIG_DM_ETH)
+	pci_init();
+#endif
 	return 0;
 }
 
@@ -578,8 +604,8 @@ void detail_board_ddr_info(void)
 	print_ddr_info(0);
 }
 
-#if defined(CONFIG_ARCH_MISC_INIT)
-int arch_misc_init(void)
+#ifdef CONFIG_MISC_INIT_R
+int misc_init_r(void)
 {
 	config_board_mux();
 
@@ -608,7 +634,9 @@ void fdt_fixup_board_enet(void *fdt)
 	if (get_mc_boot_status() == 0 &&
 	    (is_lazy_dpl_addr_valid() || get_dpl_apply_status() == 0)) {
 		fdt_status_okay(fdt, offset);
+#ifndef CONFIG_DM_ETH
 		fdt_fixup_board_phy(fdt);
+#endif
 	} else {
 		fdt_status_fail(fdt, offset);
 	}
@@ -621,7 +649,6 @@ void board_quiesce_devices(void)
 #endif
 
 #ifdef CONFIG_OF_BOARD_SETUP
-
 int ft_board_setup(void *blob, bd_t *bd)
 {
 	int i;
@@ -684,6 +711,7 @@ int ft_board_setup(void *blob, bd_t *bd)
 	fdt_fsl_mc_fixup_iommu_map_entry(blob);
 	fdt_fixup_board_enet(blob);
 #endif
+	fdt_fixup_icid(blob);
 
 	return 0;
 }

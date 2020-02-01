@@ -5,6 +5,7 @@
  */
 #include <common.h>
 #include <env.h>
+#include <init.h>
 #include <malloc.h>
 #include <errno.h>
 #include <netdev.h>
@@ -22,6 +23,7 @@
 #include <asm/arch/soc.h>
 #include <asm/arch/ppa.h>
 #include <fsl_sec.h>
+#include <asm/arch-fsl-layerscape/fsl_icid.h>
 
 #ifdef CONFIG_FSL_QIXIS
 #include "../common/qixis.h"
@@ -243,6 +245,10 @@ int board_init(void)
 	sec_init();
 #endif
 
+#if !defined(CONFIG_SYS_EARLY_PCI_INIT) && defined(CONFIG_DM_ETH)
+	pci_init();
+#endif
+
 	return 0;
 }
 
@@ -316,13 +322,6 @@ void detail_board_ddr_info(void)
 	}
 #endif
 }
-
-#if defined(CONFIG_ARCH_MISC_INIT)
-int arch_misc_init(void)
-{
-	return 0;
-}
-#endif
 
 #ifdef CONFIG_FSL_MC_ENET
 void fdt_fixup_board_enet(void *fdt)
@@ -477,6 +476,8 @@ int ft_board_setup(void *blob, bd_t *bd)
 #ifdef CONFIG_FSL_MC_ENET
 	fdt_fixup_board_enet(blob);
 #endif
+
+	fdt_fixup_icid(blob);
 
 	return 0;
 }

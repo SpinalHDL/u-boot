@@ -4,13 +4,18 @@
  */
 
 #include <common.h>
+#include <command.h>
 #include <env.h>
+#include <flash.h>
+#include <init.h>
 #include <malloc.h>
+#include <net.h>
 #include <asm/processor.h>
 #include <asm/io.h>
 #include <asm/mmc.h>
 #include <spi.h>
 #include <spi_flash.h>
+#include <linux/delay.h>
 
 int checkboard(void)
 {
@@ -93,7 +98,7 @@ static void set_mac_to_sh_giga_eth_register(int channel, char *mac_string)
 	unsigned char mac[6];
 	unsigned long val;
 
-	eth_parse_enetaddr(mac_string, mac);
+	string_to_enetaddr(mac_string, mac);
 
 	if (!channel)
 		ether = GETHER0_MAC_BASE;
@@ -242,7 +247,7 @@ int board_late_init(void)
 }
 
 #ifdef CONFIG_DEPRECATED
-int do_write_mac(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+int do_write_mac(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 {
 	int i, ret;
 	char mac_string[256];

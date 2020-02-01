@@ -14,10 +14,14 @@
  */
 
 #include <common.h>
+#include <log.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/imx-regs.h>
+#include <dm/device_compat.h>
+#include <linux/delay.h>
 #include <linux/errno.h>
 #include <asm/mach-imx/mxc_i2c.h>
+#include <asm/mach-imx/sys_proto.h>
 #include <asm/io.h>
 #include <i2c.h>
 #include <watchdog.h>
@@ -746,6 +750,14 @@ void bus_i2c_init(int index, int speed, int unused,
 		return;
 	}
 
+	if (CONFIG_IS_ENABLED(IMX_MODULE_FUSE)) {
+		if (i2c_fused((ulong)mxc_i2c_buses[index].base)) {
+			printf("SoC fuse indicates I2C@0x%lx is unavailable.\n",
+			       (ulong)mxc_i2c_buses[index].base);
+			return;
+		}
+	}
+
 	/*
 	 * Warning: Be careful to allow the assignment to a static
 	 * variable here. This function could be called while U-Boot is
@@ -890,6 +902,14 @@ static int mxc_i2c_probe(struct udevice *bus)
 	addr = devfdt_get_addr(bus);
 	if (addr == FDT_ADDR_T_NONE)
 		return -EINVAL;
+
+	if (CONFIG_IS_ENABLED(IMX_MODULE_FUSE)) {
+		if (i2c_fused((ulong)addr)) {
+			printf("SoC fuse indicates I2C@0x%lx is unavailable.\n",
+			       (ulong)addr);
+			return -ENODEV;
+		}
+	}
 
 	i2c_bus->base = addr;
 	i2c_bus->index = bus->seq;
@@ -1049,5 +1069,6 @@ U_BOOT_DRIVER(i2c_mxc) = {
 	.probe = mxc_i2c_probe,
 	.priv_auto_alloc_size = sizeof(struct mxc_i2c_bus),
 	.ops = &mxc_i2c_ops,
+	.flags = DM_FLAG_PRE_RELOC,
 };
 #endif

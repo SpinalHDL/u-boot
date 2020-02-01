@@ -26,7 +26,7 @@
 #define CONFIG_RESET_VECTOR_ADDRESS	0x110bfffc
 #endif
 
-#ifdef CONFIG_NAND
+#ifdef CONFIG_MTD_RAW_NAND
 #define CONFIG_SPL_INIT_MINIMAL
 #define CONFIG_SPL_FLUSH_IMAGE
 #define CONFIG_SPL_TARGET		"u-boot-with-spl.bin"
@@ -93,9 +93,6 @@
  */
 #define CONFIG_L2_CACHE			/* toggle L2 cache */
 #define CONFIG_BTB			/* enable branch predition */
-
-#define CONFIG_SYS_MEMTEST_START	0x01000000	/* memtest works on */
-#define CONFIG_SYS_MEMTEST_END		0x01ffffff
 
 /* DDR Setup */
 #define CONFIG_SYS_SPD_BUS_NUM		0
@@ -307,7 +304,7 @@ combinations. this should be removed later
 #endif
 
 /* Set up IFC registers for boot location NOR/NAND */
-#if defined(CONFIG_NAND) || defined(CONFIG_NAND_SECBOOT)
+#if defined(CONFIG_MTD_RAW_NAND) || defined(CONFIG_NAND_SECBOOT)
 #define CONFIG_SYS_CSPR0		CONFIG_SYS_NAND_CSPR
 #define CONFIG_SYS_AMASK0		CONFIG_SYS_NAND_AMASK
 #define CONFIG_SYS_CSOR0		CONFIG_SYS_NAND_CSOR
@@ -448,22 +445,8 @@ combinations. this should be removed later
 #if defined(CONFIG_RAMBOOT_SDCARD)
 #define CONFIG_FSL_FIXED_MMC_LOCATION
 #define CONFIG_SYS_MMC_ENV_DEV		0
-#define CONFIG_ENV_SIZE			0x2000
-#elif defined(CONFIG_RAMBOOT_SPIFLASH)
-#define CONFIG_ENV_OFFSET	0x100000	/* 1MB */
-#define CONFIG_ENV_SECT_SIZE	0x10000
-#define CONFIG_ENV_SIZE		0x2000
-#elif defined(CONFIG_NAND) || defined(CONFIG_NAND_SECBOOT)
-#define CONFIG_ENV_SIZE		CONFIG_SYS_NAND_BLOCK_SIZE
-#define CONFIG_ENV_OFFSET	((768 * 1024) + CONFIG_SYS_NAND_BLOCK_SIZE)
+#elif defined(CONFIG_MTD_RAW_NAND) || defined(CONFIG_NAND_SECBOOT)
 #define CONFIG_ENV_RANGE	(3 * CONFIG_ENV_SIZE)
-#elif defined(CONFIG_SYS_RAMBOOT)
-#define CONFIG_ENV_ADDR			(CONFIG_SYS_MONITOR_BASE - 0x1000)
-#define CONFIG_ENV_SIZE			0x2000
-#else
-#define CONFIG_ENV_ADDR	(CONFIG_SYS_MONITOR_BASE - CONFIG_ENV_SECT_SIZE)
-#define CONFIG_ENV_SIZE		0x2000
-#define CONFIG_ENV_SECT_SIZE	0x20000
 #endif
 
 #define CONFIG_LOADS_ECHO		/* echo on for serial download */

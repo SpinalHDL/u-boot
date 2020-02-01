@@ -57,10 +57,6 @@
 #define CONFIG_SYS_SDRAM_BASE		0x20000000
 #define CONFIG_SYS_SDRAM_SIZE		SZ_32M
 
-#define CONFIG_SYS_MEMTEST_START	CONFIG_SYS_SDRAM_BASE
-#define CONFIG_SYS_MEMTEST_END		\
-		(CONFIG_SYS_MEMTEST_START + CONFIG_SYS_SDRAM_SIZE - SZ_256K)
-
 /*
  * LowLevel Init
  */
@@ -143,8 +139,6 @@
 /*
  * after u-boot.bin
  */
-#define CONFIG_ENV_ADDR			\
-		(CONFIG_SYS_FLASH_BASE + CONFIG_SYS_MONITOR_LEN)
 
 /* The following #defines are needed to get flash environment right */
 #define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_FLASH_BASE

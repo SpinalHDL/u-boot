@@ -51,12 +51,14 @@
 #define MEM_LAYOUT_ENV_SETTINGS \
 	"bootm_size=0x10000000\0" \
 	"fdt_addr_r=0x82000000\0" \
-	"fdt_high=0xffffffff\0" \
-	"initrd_high=0xffffffff\0" \
 	"kernel_addr_r=0x81000000\0" \
 	"pxefile_addr_r=0x87100000\0" \
 	"ramdisk_addr_r=0x82100000\0" \
 	"scriptaddr=0x87000000\0"
+
+#define UBOOT_UPDATE \
+	"update_uboot=nand erase.part u-boot && " \
+		"nand write ${loadaddr} u-boot ${filesize}\0" \
 
 #define NFS_BOOTCMD \
 	"nfsargs=ip=:::::eth0: root=/dev/nfs\0"	\
@@ -112,6 +114,7 @@
 	NFS_BOOTCMD \
 	SD_BOOTCMD \
 	UBI_BOOTCMD \
+	UBOOT_UPDATE \
 	"console=ttyLP0\0" \
 	"defargs=user_debug=30\0" \
 	"dfu_alt_info=" DFU_ALT_NAND_INFO "\0" \
@@ -135,9 +138,6 @@
 #define CONFIG_SYS_CBSIZE		1024	/* Console I/O Buffer Size */
 #define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
 
-#define CONFIG_SYS_MEMTEST_START	0x80010000
-#define CONFIG_SYS_MEMTEST_END		0x87C00000
-
 #define CONFIG_SYS_LOAD_ADDR		CONFIG_LOADADDR
 #define CONFIG_SYS_HZ			1000
 
@@ -156,9 +156,7 @@
 
 /* Environment organization */
 #ifdef CONFIG_ENV_IS_IN_NAND
-#define CONFIG_ENV_SIZE			(64 * 2048)
 #define CONFIG_ENV_RANGE		(4 * 64 * 2048)
-#define CONFIG_ENV_OFFSET		(12 * 64 * 2048)
 #endif
 
 /* USB Host Support */

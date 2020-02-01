@@ -13,8 +13,11 @@
 
 #include <configs/bur_cfg_common.h>
 #include <configs/bur_am335x_common.h>
+#include <linux/stringify.h>
 /* ------------------------------------------------------------------------- */
+#if !defined(CONFIG_AM335X_LCD)
 #define CONFIG_AM335X_LCD
+#endif
 #define LCD_BPP				LCD_COLOR32
 
 /* memory */
@@ -66,9 +69,5 @@ BUR_COMMON_ENV \
 /* Environment */
 #define CONFIG_SYS_MMC_ENV_DEV		1
 #define CONFIG_SYS_MMC_ENV_PART		2
-#define CONFIG_ENV_SIZE			0x10000
-#define CONFIG_ENV_OFFSET		0x40000	/* TODO: Adresse definieren */
-#define CONFIG_ENV_OFFSET_REDUND	(CONFIG_ENV_OFFSET + CONFIG_ENV_SIZE)
-#define CONFIG_SYS_REDUNDAND_ENVIRONMENT
 
 #endif	/* __CONFIG_BRXRE1_H__ */

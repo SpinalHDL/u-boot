@@ -4,6 +4,7 @@
  * Copyright (C) 2016 Grinn
  */
 
+#include <init.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/iomux.h>
 #include <asm/arch/imx-regs.h>
@@ -17,6 +18,7 @@
 #include <asm/io.h>
 #include <common.h>
 #include <fsl_esdhc_imx.h>
+#include <linux/delay.h>
 #include <linux/sizes.h>
 #include <mmc.h>
 

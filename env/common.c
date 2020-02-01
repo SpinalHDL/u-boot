@@ -8,13 +8,17 @@
  */
 
 #include <common.h>
+#include <bootstage.h>
 #include <command.h>
 #include <env.h>
 #include <env_internal.h>
+#include <log.h>
+#include <sort.h>
 #include <linux/stddef.h>
 #include <search.h>
 #include <errno.h>
 #include <malloc.h>
+#include <u-boot/crc.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

@@ -10,11 +10,15 @@
 
 #include <config.h>
 #include <common.h>
+#include <cpu_func.h>
 #include <env.h>
+#include <log.h>
 #include <malloc.h>
 #include <net.h>
 #include <netdev.h>
 #include <miiphy.h>
+#include <asm/cache.h>
+#include <linux/delay.h>
 #include <linux/errno.h>
 #include <asm/io.h>
 
@@ -857,6 +861,10 @@ static int sh_ether_probe(struct udevice *udev)
 	if (ret)
 		goto err_mdio_register;
 #endif
+
+	ret = sh_eth_init_common(eth, pdata->enetaddr);
+	if (ret)
+		goto err_phy_config;
 
 	ret = sh_eth_phy_config(udev);
 	if (ret) {

@@ -5,6 +5,7 @@
  */
 
 #include <common.h>
+#include <init.h>
 #include <asm/io.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/sys_proto.h>
@@ -47,7 +48,7 @@ static int power_init(void)
 	struct udevice *dev;
 	int ret;
 
-	ret = pmic_get("mc34708", &dev);
+	ret = pmic_get("mc34708@8", &dev);
 	if (ret) {
 		printf("%s: mc34708 not found !\n", __func__);
 		return ret;

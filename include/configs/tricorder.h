@@ -78,7 +78,6 @@
 
 /* environment placement (for NAND), is different for FLASHCARD but does not
  * harm there */
-#define CONFIG_ENV_OFFSET_REDUND	0x2A0000    /* redundant env start */
 #define CONFIG_ENV_RANGE		(384 << 10) /* allow badblocks in env */
 
 /* the loadaddr is the same as CONFIG_SYS_LOAD_ADDR, unfortunately the defiend
@@ -177,10 +176,6 @@
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_CBSIZE		512	/* Console I/O Buffer Size */
 
-#define CONFIG_SYS_MEMTEST_START	(OMAP34XX_SDRC_CS0 + 0x00000000)
-#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + \
-					0x07000000) /* 112 MB */
-
 #define CONFIG_SYS_LOAD_ADDR		(OMAP34XX_SDRC_CS0 + 0x02000000)
 
 /*
@@ -249,5 +244,4 @@
 #define CONFIG_SYS_SPL_MALLOC_START	0x80208000
 #define CONFIG_SYS_SPL_MALLOC_SIZE	0x100000	/* 1 MB */
 
-#define CONFIG_SYS_MEMTEST_SCRATCH	0x81000000
 #endif /* __CONFIG_H */

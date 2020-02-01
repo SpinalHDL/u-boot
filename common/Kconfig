@@ -303,7 +303,7 @@ config NOR_BOOT
 config NAND_BOOT
 	bool "Support for booting from NAND flash"
 	default n
-	imply NAND
+	imply MTD_RAW_NAND
 	help
 	  Enabling this will make a U-Boot binary that is capable of being
 	  booted via NAND flash. This is not a must, some SoCs need this,
@@ -312,7 +312,7 @@ config NAND_BOOT
 config ONENAND_BOOT
 	bool "Support for booting from ONENAND"
 	default n
-	imply NAND
+	imply MTD_RAW_NAND
 	help
 	  Enabling this will make a U-Boot binary that is capable of being
 	  booted via ONENAND. This is not a must, some SoCs need this,
@@ -469,7 +469,7 @@ config IDENT_STRING
 config LOGLEVEL
 	int "loglevel"
 	default 4
-	range 0 8
+	range 0 10
 	help
 	  All Messages with a loglevel smaller than the console loglevel will
 	  be compiled in. The loglevels are defined as follows:
@@ -567,6 +567,8 @@ config PRE_CON_BUF_ADDR
 	depends on PRE_CONSOLE_BUFFER
 	default 0x2f000000 if ARCH_SUNXI && MACH_SUN9I
 	default 0x4f000000 if ARCH_SUNXI && !MACH_SUN9I
+	default 0x0f000000 if ROCKCHIP_RK3288
+	default 0x0f200000 if ROCKCHIP_RK3399
 	help
 	  This sets the start address of the pre-console buffer. This must
 	  be in available memory and is accessed before relocation and
@@ -764,7 +766,7 @@ config SPL_LOG_CONSOLE
 	  line number are omitted.
 
 config TPL_LOG_CONSOLE
-	bool "Allow log output to the console in SPL"
+	bool "Allow log output to the console in TPL"
 	depends on TPL_LOG
 	default y
 	help
@@ -773,9 +775,16 @@ config TPL_LOG_CONSOLE
 	  log message is shown - other details like level, category, file and
 	  line number are omitted.
 
+config LOG_SYSLOG
+	bool "Log output to syslog server"
+	depends on LOG && NET
+	help
+	  Enables a log driver which broadcasts log records via UDP port 514
+	  to syslog servers.
+
 config LOG_TEST
 	bool "Provide a test for logging"
-	depends on LOG
+	depends on LOG && UNIT_TEST
 	default y if SANDBOX
 	help
 	  This enables a 'log test' command to test logging. It is normally
@@ -923,6 +932,16 @@ config LAST_STAGE_INIT
 	  U-Boot calls last_stage_init() before the command-line interpreter is
 	  started.
 
+config PCI_INIT_R
+	bool "Enumerate PCI buses during init"
+	depends on PCI
+	default y if !DM_PCI
+	help
+	  With this option U-Boot will call pci_init() soon after relocation,
+	  which will enumerate PCI buses. This is needed, for instance, in the
+	  case of DM PCI-based Ethernet devices, which will not be detected
+	  without having the enumeration performed earlier.
+
 endmenu
 
 menu "Security support"
@@ -1044,3 +1063,21 @@ config BLOBLIST_ADDR
 endmenu
 
 source "common/spl/Kconfig"
+
+config IMAGE_SIGN_INFO
+	bool
+	select SHA1
+	select SHA256
+	help
+	  Enable image_sign_info helper functions.
+
+if IMAGE_SIGN_INFO
+
+config SPL_IMAGE_SIGN_INFO
+	bool
+	select SHA1
+	select SHA256
+	help
+	  Enable image_sign_info helper functions in SPL.
+
+endif

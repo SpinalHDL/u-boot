@@ -9,7 +9,22 @@
 
 #ifdef CONFIG_OF_LIBFDT
 
+#include <asm/u-boot.h>
 #include <linux/libfdt.h>
+
+/**
+ * arch_fixup_fdt() - Write arch-specific information to fdt
+ *
+ * Defined in arch/$(ARCH)/lib/bootm-fdt.c
+ *
+ * @blob:	FDT blob to write to
+ * @return 0 if ok, or -ve FDT_ERR_... on failure
+ */
+int arch_fixup_fdt(void *blob);
+
+void ft_cpu_setup(void *blob, bd_t *bd);
+
+void ft_pci_setup(void *blob, bd_t *bd);
 
 u32 fdt_getprop_u32_default_node(const void *fdt, int off, int cell,
 				const char *prop, const u32 dflt);
@@ -94,6 +109,7 @@ int fdt_fixup_memory(void *blob, u64 start, u64 size);
  */
 #ifdef CONFIG_ARCH_FIXUP_FDT_MEMORY
 int fdt_fixup_memory_banks(void *blob, u64 start[], u64 size[], int banks);
+int fdt_set_usable_memory(void *blob, u64 start[], u64 size[], int banks);
 #else
 static inline int fdt_fixup_memory_banks(void *blob, u64 start[], u64 size[],
 					 int banks)
@@ -327,6 +343,15 @@ int fdt_get_cells_len(const void *blob, char *nr_cells_name);
 #ifdef USE_HOSTCC
 int fdtdec_get_int(const void *blob, int node, const char *prop_name,
 		int default_val);
+
+/*
+ * Count child nodes of one parent node.
+ *
+ * @param blob	FDT blob
+ * @param node	parent node
+ * @return number of child node; 0 if there is not child node
+ */
+int fdtdec_get_child_count(const void *blob, int node);
 #endif
 #ifdef CONFIG_FMAN_ENET
 int fdt_update_ethernet_dt(void *blob);

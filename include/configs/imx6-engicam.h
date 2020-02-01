@@ -10,13 +10,13 @@
 #define __IMX6_ENGICAM_CONFIG_H
 
 #include <linux/sizes.h>
+#include <linux/stringify.h>
 #include "mx6_common.h"
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(16 * SZ_1M)
 
 /* Total Size of Environment Sector */
-#define CONFIG_ENV_SIZE			SZ_128K
 
 /* Allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
@@ -25,11 +25,7 @@
 #ifndef CONFIG_ENV_IS_NOWHERE
 /* Environment in MMC */
 # if defined(CONFIG_ENV_IS_IN_MMC)
-#  define CONFIG_ENV_OFFSET		0x100000
 /* Environment in NAND */
-# elif defined(CONFIG_ENV_IS_IN_NAND)
-#  define CONFIG_ENV_OFFSET		0x400000
-#  define CONFIG_ENV_SECT_SIZE		CONFIG_ENV_SIZE
 # endif
 #endif
 
@@ -109,8 +105,6 @@
 #define CONFIG_BOOTCOMMAND		"run $modeboot"
 
 /* Miscellaneous configurable options */
-#define CONFIG_SYS_MEMTEST_START	0x80000000
-#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + 0x8000000)
 
 #define CONFIG_SYS_LOAD_ADDR		CONFIG_LOADADDR
 #define CONFIG_SYS_HZ			1000
@@ -159,17 +153,6 @@
 # define CONFIG_SYS_NAND_U_BOOT_OFFS	0x200000
 
 /* MTD device */
-#endif
-
-/* Ethernet */
-#ifdef CONFIG_FEC_MXC
-# ifdef CONFIG_TARGET_MX6Q_ICORE_RQS
-#  define CONFIG_FEC_MXC_PHYADDR	3
-#  define CONFIG_FEC_XCV_TYPE		RGMII
-# else
-#  define CONFIG_FEC_MXC_PHYADDR	0
-#  define CONFIG_FEC_XCV_TYPE		RMII
-# endif
 #endif
 
 /* Falcon Mode */

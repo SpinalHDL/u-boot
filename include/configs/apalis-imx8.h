@@ -24,6 +24,7 @@
 
 /* Networking */
 #define FEC_QUIRK_ENET_MAC
+#define FEC_ENET_ENABLE_TXC_DELAY
 
 #define CONFIG_TFTP_TSIZE
 
@@ -82,13 +83,7 @@
 
 #define CONFIG_SYS_INIT_SP_ADDR		0x80200000
 
-#define CONFIG_SYS_MEMTEST_START	0x88000000
-#define CONFIG_SYS_MEMTEST_END		0x89000000
-
 /* Environment in eMMC, before config block at the end of 1st "boot sector" */
-#define CONFIG_ENV_SIZE			SZ_8K
-#define CONFIG_ENV_OFFSET		(-CONFIG_ENV_SIZE + \
-					 CONFIG_TDX_CFG_BLOCK_OFFSET)
 #define CONFIG_SYS_MMC_ENV_DEV		0	/* USDHC1 eMMC */
 #define CONFIG_SYS_MMC_ENV_PART		1
 

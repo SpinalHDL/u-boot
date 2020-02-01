@@ -5,6 +5,7 @@
  */
 #include <common.h>
 #include <dm.h>
+#include <log.h>
 #include <malloc.h>
 #include <usb.h>
 #include <watchdog.h>
@@ -13,7 +14,7 @@
 #include <linux/usb/dwc3.h>
 #include <power/regulator.h>
 
-#include "xhci.h"
+#include <usb/xhci.h>
 
 struct rockchip_xhci_platdata {
 	fdt_addr_t hcd_base;

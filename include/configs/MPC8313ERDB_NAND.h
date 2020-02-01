@@ -9,6 +9,8 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
+#include <linux/stringify.h>
+
 /*
  * High Level Configuration Options
  */
@@ -43,7 +45,6 @@
 #endif
 
 #define CONFIG_PCI_INDIRECT_BRIDGE
-#define CONFIG_FSL_ELBC 1
 
 /*
  * On-board devices
@@ -57,9 +58,6 @@
 #if !defined(CONFIG_SPL_BUILD)
 #define CONFIG_DEFAULT_IMMR	CONFIG_SYS_IMMR
 #endif
-
-#define CONFIG_SYS_MEMTEST_START	0x00001000
-#define CONFIG_SYS_MEMTEST_END		0x07f00000
 
 /* Early revs of this board will lock up hard when attempting
  * to access the PMC registers, unless a JTAG debugger is
@@ -297,12 +295,7 @@
 /*
  * Environment
  */
-#define CONFIG_ENV_OFFSET		(512 * 1024)
-#define CONFIG_ENV_SECT_SIZE	CONFIG_SYS_NAND_BLOCK_SIZE
-#define CONFIG_ENV_SIZE		CONFIG_ENV_SECT_SIZE
-#define CONFIG_ENV_SIZE_REDUND	CONFIG_ENV_SIZE
-#define CONFIG_ENV_RANGE		(CONFIG_ENV_SECT_SIZE * 4)
-#define CONFIG_ENV_OFFSET_REDUND	(CONFIG_ENV_OFFSET + CONFIG_ENV_RANGE)
+#define CONFIG_ENV_RANGE		(CONFIG_SYS_NAND_BLOCK_SIZE * 4)
 
 #define CONFIG_LOADS_ECHO	1	/* echo on for serial download */
 #define CONFIG_SYS_LOADS_BAUD_CHANGE	1	/* allow baudrate change */

@@ -69,8 +69,6 @@
  * Perform a SDRAM Memtest from the start of SDRAM
  * till the beginning of the U-Boot position in RAM.
  */
-#define CONFIG_SYS_MEMTEST_START	CONFIG_SYS_SDRAM_BASE
-#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_TEXT_BASE - 0x100000)
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN \
@@ -144,7 +142,6 @@
 /*
  * The NAND Flash partitions:
  */
-#define CONFIG_ENV_OFFSET_REDUND	(0x180000)
 #define CONFIG_ENV_RANGE		(SZ_512K)
 
 /*

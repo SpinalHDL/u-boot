@@ -6,6 +6,8 @@
 
 #include <common.h>
 #include <ide.h>
+#include <init.h>
+#include <net.h>
 #include <netdev.h>
 #include <asm/processor.h>
 #include <asm/io.h>

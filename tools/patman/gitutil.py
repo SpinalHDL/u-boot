@@ -2,17 +2,17 @@
 # Copyright (c) 2011 The Chromium OS Authors.
 #
 
-import command
 import re
 import os
-import series
 import subprocess
 import sys
-import terminal
 
-import checkpatch
-import settings
-import tools
+from patman import checkpatch
+from patman import command
+from patman import series
+from patman import settings
+from patman import terminal
+from patman import tools
 
 # True to use --no-decorate - we check this in Setup()
 use_no_decorate = True
@@ -23,7 +23,7 @@ def LogCmd(commit_range, git_dir=None, oneline=False, reverse=False,
 
     Args:
         commit_range: Range expression to use for log, None for none
-        git_dir: Path to git repositiory (None to use default)
+        git_dir: Path to git repository (None to use default)
         oneline: True to use --oneline, else False
         reverse: True to reverse the log (--reverse)
         count: Number of commits to list, or None for no limit
@@ -166,7 +166,7 @@ def CountCommitsInRange(git_dir, range_expr):
         git_dir: Directory containing git repo
         range_expr: Range to check
     Return:
-        Number of patches that exist in the supplied rangem or None if none
+        Number of patches that exist in the supplied range or None if none
         were found
     """
     pipe = [LogCmd(range_expr, git_dir=git_dir, oneline=True)]

@@ -25,7 +25,7 @@
 #include <linux/list.h>
 
 typedef struct global_data {
-	bd_t *bd;
+	struct bd_info *bd;
 	unsigned long flags;
 	unsigned int baudrate;
 	unsigned long cpu_clk;		/* CPU clock in Hz!		*/
@@ -89,9 +89,6 @@ typedef struct global_data {
 #endif
 #if defined(CONFIG_SYS_I2C)
 	int		cur_i2c_bus;	/* current used i2c bus */
-#endif
-#ifdef CONFIG_SYS_I2C_MXC
-	void *srdata[10];
 #endif
 	unsigned int timebase_h;
 	unsigned int timebase_l;
@@ -169,5 +166,6 @@ typedef struct global_data {
 #define GD_FLG_SPL_EARLY_INIT	0x04000 /* Early SPL init is done	   */
 #define GD_FLG_LOG_READY	0x08000 /* Log system is ready for use	   */
 #define GD_FLG_WDT_READY	0x10000 /* Watchdog is ready for use	   */
+#define GD_FLG_SKIP_LL_INIT	0x20000	/* Don't perform low-level init	   */
 
 #endif /* __ASM_GENERIC_GBL_DATA_H */

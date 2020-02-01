@@ -72,13 +72,13 @@ struct cbfs_fileheader {
 
 struct cbfs_cachenode {
 	struct cbfs_cachenode *next;
-	u32 type;
 	void *data;
-	u32 data_length;
 	char *name;
+	u32 type;
+	u32 data_length;
 	u32 name_length;
 	u32 attributes_offset;
-} __packed;
+};
 
 extern enum cbfs_result file_cbfs_result;
 
@@ -135,7 +135,7 @@ void file_cbfs_get_next(const struct cbfs_cachenode **file);
  */
 const struct cbfs_cachenode *file_cbfs_find(const char *name);
 
-struct cbfs_priv *priv;
+struct cbfs_priv;
 
 /**
  * cbfs_find_file() - Find a file in a given CBFS

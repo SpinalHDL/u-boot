@@ -5,6 +5,9 @@
 
 #include <common.h>
 #include <clk.h>
+#include <log.h>
+#include <dm/device_compat.h>
+#include <dm/devres.h>
 #include <dm/ofnode.h>
 #include <generic-phy.h>
 #include <reset.h>

@@ -8,7 +8,9 @@
 
 #include <common.h>
 #include <env.h>
+#include <log.h>
 #include <mapmem.h>
+#include <net.h>
 #include <stdio_dev.h>
 #include <linux/ctype.h>
 #include <linux/types.h>
@@ -465,6 +467,41 @@ int fdt_fixup_memory_banks(void *blob, u64 start[], u64 size[], int banks)
 				"reg", fdt_strerror(err));
 		return err;
 	}
+	return 0;
+}
+
+int fdt_set_usable_memory(void *blob, u64 start[], u64 size[], int areas)
+{
+	int err, nodeoffset;
+	int len;
+	u8 tmp[8 * 16]; /* Up to 64-bit address + 64-bit size */
+
+	if (areas > 8) {
+		printf("%s: num areas %d exceeds hardcoded limit %d\n",
+		       __func__, areas, 8);
+		return -1;
+	}
+
+	err = fdt_check_header(blob);
+	if (err < 0) {
+		printf("%s: %s\n", __func__, fdt_strerror(err));
+		return err;
+	}
+
+	/* find or create "/memory" node. */
+	nodeoffset = fdt_find_or_add_subnode(blob, 0, "memory");
+	if (nodeoffset < 0)
+		return nodeoffset;
+
+	len = fdt_pack_reg(blob, tmp, start, size, areas);
+
+	err = fdt_setprop(blob, nodeoffset, "linux,usable-memory", tmp, len);
+	if (err < 0) {
+		printf("WARNING: could not set %s %s.\n",
+		       "reg", fdt_strerror(err));
+		return err;
+	}
+
 	return 0;
 }
 #endif
@@ -1566,7 +1603,7 @@ static int fdt_read_prop(const fdt32_t *prop, int prop_len, int cell_off,
 			 uint64_t *val, int cells)
 {
 	const fdt32_t *prop32 = &prop[cell_off];
-	const fdt64_t *prop64 = (const fdt64_t *)&prop[cell_off];
+	const unaligned_fdt64_t *prop64 = (const fdt64_t *)&prop[cell_off];
 
 	if ((cell_off + cells) > prop_len)
 		return -FDT_ERR_NOSPACE;

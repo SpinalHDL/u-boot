@@ -9,8 +9,11 @@
 #include <command.h>
 #include <config.h>
 #include <fat.h>
+#include <log.h>
+#include <malloc.h>
 #include <asm/byteorder.h>
 #include <part.h>
+#include <asm/cache.h>
 #include <linux/ctype.h>
 #include <div64.h>
 #include <linux/math64.h>
@@ -794,6 +797,8 @@ set_contents(fsdata *mydata, dir_entry *dentptr, loff_t pos, __u8 *buffer,
 
 			newclust = get_fatent(mydata, endclust);
 
+			if (newclust != endclust + 1)
+				break;
 			if (IS_LAST_CLUST(newclust, mydata->fatsize))
 				break;
 			if (CHECK_CLUST(newclust, mydata->fatsize)) {
@@ -811,7 +816,9 @@ set_contents(fsdata *mydata, dir_entry *dentptr, loff_t pos, __u8 *buffer,
 			offset = 0;
 		else
 			offset = pos - cur_pos;
-		wsize = min(cur_pos + actsize, filesize) - pos;
+		wsize = min_t(unsigned long long, actsize, filesize - cur_pos);
+		wsize -= offset;
+
 		if (get_set_cluster(mydata, curclust, offset,
 				    buffer, wsize, &actsize)) {
 			printf("Error get-and-setting cluster\n");
@@ -823,8 +830,6 @@ set_contents(fsdata *mydata, dir_entry *dentptr, loff_t pos, __u8 *buffer,
 
 		if (filesize <= cur_pos)
 			break;
-
-		/* CHECK: newclust = get_fatent(mydata, endclust); */
 
 		if (IS_LAST_CLUST(newclust, mydata->fatsize))
 			/* no more clusters */

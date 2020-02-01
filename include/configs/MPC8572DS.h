@@ -10,6 +10,8 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
+#include <linux/stringify.h>
+
 #include "../board/freescale/common/ics307_clk.h"
 
 #ifndef CONFIG_RESET_VECTOR_ADDRESS
@@ -47,9 +49,6 @@
 #define CONFIG_ADDR_MAP			1
 #define CONFIG_SYS_NUM_ADDR_MAP		16	/* number of TLB1 entries */
 #endif
-
-#define CONFIG_SYS_MEMTEST_START	0x00000000	/* memtest works on */
-#define CONFIG_SYS_MEMTEST_END		0x7fffffff
 
 /*
  * Config the L2 Cache as L2 SRAM
@@ -505,18 +504,6 @@
 /*
  * Environment
  */
-
-#if defined(CONFIG_SYS_RAMBOOT)
-
-#else
-	#if CONFIG_SYS_MONITOR_BASE > 0xfff80000
-	#define CONFIG_ENV_ADDR	0xfff80000
-	#else
-	#define CONFIG_ENV_ADDR	(CONFIG_SYS_MONITOR_BASE - CONFIG_ENV_SECT_SIZE)
-	#endif
-	#define CONFIG_ENV_SIZE	0x2000
-	#define CONFIG_ENV_SECT_SIZE	0x20000 /* 128K (one sector) */
-#endif
 
 #define CONFIG_LOADS_ECHO	1	/* echo on for serial download */
 #define CONFIG_SYS_LOADS_BAUD_CHANGE	1	/* allow baudrate change */

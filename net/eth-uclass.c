@@ -6,13 +6,16 @@
  */
 
 #include <common.h>
+#include <bootstage.h>
 #include <dm.h>
 #include <env.h>
+#include <log.h>
 #include <net.h>
 #include <dm/device-internal.h>
 #include <dm/uclass-internal.h>
 #include <net/pcap.h>
 #include "eth_internal.h"
+#include <eth_phy.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -40,8 +43,12 @@ static int eth_errno;
 static struct eth_uclass_priv *eth_get_uclass_priv(void)
 {
 	struct uclass *uc;
+	int ret;
 
-	uclass_get(UCLASS_ETH, &uc);
+	ret = uclass_get(UCLASS_ETH, &uc);
+	if (ret)
+		return NULL;
+
 	assert(uc);
 	return uc->priv;
 }
@@ -102,6 +109,7 @@ struct udevice *eth_get_dev_by_name(const char *devname)
 	struct udevice *it;
 	struct uclass *uc;
 	int len = strlen("eth");
+	int ret;
 
 	/* Must be longer than 3 to be an alias */
 	if (!strncmp(devname, "eth", len) && strlen(devname) > len) {
@@ -109,7 +117,10 @@ struct udevice *eth_get_dev_by_name(const char *devname)
 		seq = simple_strtoul(startp, &endp, 10);
 	}
 
-	uclass_get(UCLASS_ETH, &uc);
+	ret = uclass_get(UCLASS_ETH, &uc);
+	if (ret)
+		return NULL;
+
 	uclass_foreach_dev(it, uc) {
 		/*
 		 * We need the seq to be valid, so try to probe it.
@@ -227,7 +238,7 @@ static int on_ethaddr(const char *name, const char *value, enum env_op op,
 		switch (op) {
 		case env_op_create:
 		case env_op_overwrite:
-			eth_parse_enetaddr(value, pdata->enetaddr);
+			string_to_enetaddr(value, pdata->enetaddr);
 			eth_write_hwaddr(dev);
 			break;
 		case env_op_delete:
@@ -420,20 +431,25 @@ int eth_initialize(void)
 
 		bootstage_mark(BOOTSTAGE_ID_NET_ETH_INIT);
 		do {
-			if (num_devices)
-				printf(", ");
+			if (dev->seq != -1) {
+				if (num_devices)
+					printf(", ");
 
-			printf("eth%d: %s", dev->seq, dev->name);
+				printf("eth%d: %s", dev->seq, dev->name);
 
-			if (ethprime && dev == prime_dev)
-				printf(" [PRIME]");
+				if (ethprime && dev == prime_dev)
+					printf(" [PRIME]");
+			}
 
 			eth_write_hwaddr(dev);
 
+			if (dev->seq != -1)
+				num_devices++;
 			uclass_next_device_check(&dev);
-			num_devices++;
 		} while (dev);
 
+		if (!num_devices)
+			printf("No ethernet found.\n");
 		putc('\n');
 	}
 
@@ -447,6 +463,10 @@ static int eth_post_bind(struct udevice *dev)
 		       dev->name);
 		return -EINVAL;
 	}
+
+#ifdef CONFIG_DM_ETH_PHY
+	eth_phy_binds_nodes(dev);
+#endif
 
 	return 0;
 }
@@ -485,6 +505,7 @@ static int eth_post_probe(struct udevice *dev)
 	struct eth_device_priv *priv = dev->uclass_priv;
 	struct eth_pdata *pdata = dev->platdata;
 	unsigned char env_enetaddr[ARP_HLEN];
+	char *source = "DT";
 
 #if defined(CONFIG_NEEDS_MANUAL_RELOC)
 	struct eth_ops *ops = eth_get_ops(dev);
@@ -517,6 +538,7 @@ static int eth_post_probe(struct udevice *dev)
 	/* Check if the device has a valid MAC address in device tree */
 	if (!eth_dev_get_mac_address(dev, pdata->enetaddr) ||
 	    !is_valid_ethaddr(pdata->enetaddr)) {
+		source = "ROM";
 		/* Check if the device has a MAC address in ROM */
 		if (eth_get_ops(dev)->read_rom_hwaddr)
 			eth_get_ops(dev)->read_rom_hwaddr(dev);
@@ -528,9 +550,9 @@ static int eth_post_probe(struct udevice *dev)
 		    memcmp(pdata->enetaddr, env_enetaddr, ARP_HLEN)) {
 			printf("\nWarning: %s MAC addresses don't match:\n",
 			       dev->name);
-			printf("Address in ROM is          %pM\n",
-			       pdata->enetaddr);
-			printf("Address in environment is  %pM\n",
+			printf("Address in %s is\t\t%pM\n",
+			       source, pdata->enetaddr);
+			printf("Address in environment is\t%pM\n",
 			       env_enetaddr);
 		}
 
@@ -538,8 +560,8 @@ static int eth_post_probe(struct udevice *dev)
 		memcpy(pdata->enetaddr, env_enetaddr, ARP_HLEN);
 	} else if (is_valid_ethaddr(pdata->enetaddr)) {
 		eth_env_set_enetaddr_by_index("eth", dev->seq, pdata->enetaddr);
-		printf("\nWarning: %s using MAC address from ROM\n",
-		       dev->name);
+		printf("\nWarning: %s using MAC address from %s\n",
+		       dev->name, source);
 	} else if (is_zero_ethaddr(pdata->enetaddr) ||
 		   !is_valid_ethaddr(pdata->enetaddr)) {
 #ifdef CONFIG_NET_RANDOM_ETHADDR

@@ -8,6 +8,8 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
+#include <linux/stringify.h>
+
 #include "mx6_common.h"
 
 #undef CONFIG_DISPLAY_BOARDINFO
@@ -53,13 +55,7 @@
 #endif
 
 /* Network */
-#define CONFIG_FEC_MXC
-#define IMX_FEC_BASE			ENET_BASE_ADDR
-#define CONFIG_FEC_XCV_TYPE		RGMII
-#define CONFIG_ETHPRIME			"FEC"
 #define PHY_ANEG_TIMEOUT		15000 /* PHY needs longer aneg time */
-#define CONFIG_FEC_MXC_PHYADDR		6
-#define CONFIG_TFTP_TSIZE
 
 /* USB Configs */
 /* Host */
@@ -101,6 +97,7 @@
 
 #ifndef CONFIG_SPL_BUILD
 #define BOOT_TARGET_DEVICES(func) \
+	func(MMC, mmc, 0) \
 	func(MMC, mmc, 1) \
 	func(MMC, mmc, 2) \
 	func(USB, usb, 0) \
@@ -119,6 +116,17 @@
 	"zImage fat 0 1;" \
 	"imx6q-apalis-eval.dtb fat 0 1;" \
 	"imx6q-apalis-cam-eval.dtb fat 0 1"
+
+#define UBOOT_UPDATE \
+	"uboot_hwpart=1\0" \
+	"uboot_blk=8a\0" \
+	"uboot_spl_blk=2\0" \
+	"set_blkcnt=setexpr blkcnt ${filesize} + 0x1ff && " \
+		"setexpr blkcnt ${blkcnt} / 0x200\0" \
+	"update_uboot=run set_blkcnt && mmc dev 0 ${uboot_hwpart} && " \
+		"mmc write ${loadaddr} ${uboot_blk} ${blkcnt}\0" \
+	"update_spl=run set_blkcnt && mmc dev 0 ${uboot_hwpart} && " \
+		"mmc write ${loadaddr} ${uboot_spl_blk} ${blkcnt}\0"
 
 #define EMMC_BOOTCMD \
 	"set_emmcargs=setenv emmcargs ip=off root=PARTUUID=${uuid} " \
@@ -140,8 +148,6 @@
 #define MEM_LAYOUT_ENV_SETTINGS \
 	"bootm_size=0x20000000\0" \
 	"fdt_addr_r=0x12100000\0" \
-	"fdt_high=0xffffffff\0" \
-	"initrd_high=0xffffffff\0" \
 	"kernel_addr_r=0x11000000\0" \
 	"pxefile_addr_r=0x17100000\0" \
 	"ramdisk_addr_r=0x12200000\0" \
@@ -157,24 +163,6 @@
 	"nfsdtbload=setenv dtbparam; tftp ${fdt_addr_r} ${fdt_file} " \
 		"&& setenv dtbparam \" - ${fdt_addr_r}\" && true\0"
 
-#define SD_BOOTCMD \
-	"set_sdargs=setenv sdargs ip=off root=PARTUUID=${uuid} ro,noatime " \
-		"rootfstype=ext4 rootwait\0" \
-	"sdboot=run setup; run sdfinduuid; run set_sdargs; " \
-		"setenv bootargs ${defargs} ${sdargs} ${setupargs} " \
-		"${vidargs}; echo Booting from SD card; " \
-		"run sddtbload; load mmc ${sddev}:${sdbootpart} " \
-		"${kernel_addr_r} ${boot_file} && run fdt_fixup && " \
-		"bootz ${kernel_addr_r} ${dtbparam}\0" \
-	"sdbootpart=1\0" \
-	"sddev=1\0" \
-	"sddtbload=setenv dtbparam; load mmc ${sddev}:${sdbootpart} " \
-		"${fdt_addr_r} " \
-		"${fdt_file} && setenv dtbparam \" - " \
-		"${fdt_addr_r}\" && true\0" \
-	"sdfinduuid=part uuid mmc ${sddev}:${sdrootpart} uuid\0" \
-	"sdrootpart=2\0"
-
 #ifndef CONFIG_TDX_APALIS_IMX6_V1_0
 #define FDT_FILE "imx6q-apalis-eval.dtb"
 #define FDT_FILE_V1_0 "imx6q-apalis_v1_0-eval.dtb"
@@ -183,8 +171,7 @@
 #endif
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	BOOTENV \
-	"bootcmd=run emmcboot ; echo ; echo emmcboot failed ; " \
-		"setenv fdtfile ${fdt_file}; run distro_bootcmd ; " \
+	"bootcmd=setenv fdtfile ${fdt_file}; run distro_bootcmd ; " \
 		"usb start ; " \
 		"setenv stdout serial,vga ; setenv stdin serial,usbkbd\0" \
 	"boot_file=zImage\0" \
@@ -196,7 +183,7 @@
 	"fdt_fixup=;\0" \
 	MEM_LAYOUT_ENV_SETTINGS \
 	NFS_BOOTCMD \
-	SD_BOOTCMD \
+	UBOOT_UPDATE \
 	"setethupdate=if env exists ethaddr; then; else setenv ethaddr " \
 		"00:14:2d:00:00:00; fi; tftpboot ${loadaddr} " \
 		"flash_eth.img && source ${loadaddr}\0" \
@@ -225,10 +212,6 @@
 #undef CONFIG_SYS_MAXARGS
 #define CONFIG_SYS_MAXARGS		48
 
-#define CONFIG_SYS_MEMTEST_START	0x10000000
-#define CONFIG_SYS_MEMTEST_END		0x10010000
-#define CONFIG_SYS_MEMTEST_SCRATCH	0x10800000
-
 #define CONFIG_SYS_LOAD_ADDR		CONFIG_LOADADDR
 
 /* Physical Memory Map */
@@ -244,12 +227,9 @@
 	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
 /* environment organization */
-#define CONFIG_ENV_SIZE			(8 * 1024)
 
 #if defined(CONFIG_ENV_IS_IN_MMC)
 /* Environment in eMMC, before config block at the end of 1st "boot sector" */
-#define CONFIG_ENV_OFFSET		(-CONFIG_ENV_SIZE + \
-					 CONFIG_TDX_CFG_BLOCK_OFFSET)
 #define CONFIG_SYS_MMC_ENV_DEV		0
 #define CONFIG_SYS_MMC_ENV_PART		1
 #endif

@@ -8,9 +8,11 @@
 #include <common.h>
 #include <charset.h>
 #include <efi_loader.h>
+#include <log.h>
 #include <malloc.h>
 #include <mapmem.h>
 #include <fs.h>
+#include <part.h>
 
 /* GUID for file system information */
 const efi_guid_t efi_file_system_info_guid = EFI_FILE_SYSTEM_INFO_GUID;
@@ -634,7 +636,7 @@ static efi_status_t EFIAPI efi_file_getinfo(struct efi_file_handle *file,
 		utf8_utf16_strcpy(&dst, filename);
 	} else if (!guidcmp(info_type, &efi_file_system_info_guid)) {
 		struct efi_file_system_info *info = buffer;
-		disk_partition_t part;
+		struct disk_partition part;
 		efi_uintn_t required_size;
 		int r;
 
@@ -656,9 +658,16 @@ static efi_status_t EFIAPI efi_file_getinfo(struct efi_file_handle *file,
 		memset(info, 0, required_size);
 
 		info->size = required_size;
-		info->read_only = true;
+		/*
+		 * TODO: We cannot determine if the volume can be written to.
+		 */
+		info->read_only = false;
 		info->volume_size = part.size * part.blksz;
-		info->free_space = 0;
+		/*
+		 * TODO: We currently have no function to determine the free
+		 * space. The volume size is the best upper bound we have.
+		 */
+		info->free_space = info->volume_size;
 		info->block_size = part.blksz;
 		/*
 		 * TODO: The volume label is not available in U-Boot.

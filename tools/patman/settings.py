@@ -2,8 +2,6 @@
 # Copyright (c) 2011 The Chromium OS Authors.
 #
 
-from __future__ import print_function
-
 try:
     import configparser as ConfigParser
 except:
@@ -12,9 +10,9 @@ except:
 import os
 import re
 
-import command
-import gitutil
-import tools
+from patman import command
+from patman import gitutil
+from patman import tools
 
 """Default settings per-project.
 
@@ -36,10 +34,7 @@ class _ProjectConfigParser(ConfigParser.SafeConfigParser):
     - Merge general default settings/aliases with project-specific ones.
 
     # Sample config used for tests below...
-    >>> try:
-    ...     from StringIO import StringIO
-    ... except ImportError:
-    ...     from io import StringIO
+    >>> from io import StringIO
     >>> sample_config = '''
     ... [alias]
     ... me: Peter P. <likesspiders@example.com>
@@ -165,7 +160,7 @@ def ReadGitAliases(fname):
         fname: Filename to read
     """
     try:
-        fd = open(fname, 'r')
+        fd = open(fname, 'r', encoding='utf-8')
     except IOError:
         print("Warning: Cannot find alias file '%s'" % fname)
         return
@@ -259,7 +254,7 @@ def _ReadAliasFile(fname):
     """
     if os.path.exists(fname):
         bad_line = None
-        with open(fname) as fd:
+        with open(fname, encoding='utf-8') as fd:
             linenum = 0
             for line in fd:
                 linenum += 1

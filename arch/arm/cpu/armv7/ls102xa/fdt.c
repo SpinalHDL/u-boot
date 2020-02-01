@@ -4,6 +4,8 @@
  */
 
 #include <common.h>
+#include <clock_legacy.h>
+#include <net.h>
 #include <linux/libfdt.h>
 #include <fdt_support.h>
 #include <asm/io.h>

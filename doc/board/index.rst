@@ -6,6 +6,7 @@ Board-specific doc
 .. toctree::
    :maxdepth: 2
 
+   actions/index
    AndesTech/index
    atmel/index
    coreboot/index
@@ -14,5 +15,8 @@ Board-specific doc
    google/index
    intel/index
    renesas/index
+   rockchip/index
    sifive/index
+   st/index
+   toradex/index
    xilinx/index

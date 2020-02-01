@@ -24,6 +24,8 @@
 
 #include <config.h>
 #include <common.h>
+#include <cpu_func.h>
+#include <log.h>
 #include <malloc.h>
 #include <memalign.h>
 #include <mmc.h>
@@ -32,6 +34,7 @@
 #if defined(CONFIG_OMAP54XX) || defined(CONFIG_OMAP44XX)
 #include <palmas.h>
 #endif
+#include <asm/cache.h>
 #include <asm/io.h>
 #include <asm/arch/mmc_host_def.h>
 #ifdef CONFIG_OMAP54XX
@@ -46,6 +49,10 @@
 #include <asm/arch/mux.h>
 #endif
 #include <dm.h>
+#include <dm/devres.h>
+#include <linux/bitops.h>
+#include <linux/delay.h>
+#include <linux/err.h>
 #include <power/regulator.h>
 #include <thermal.h>
 
@@ -183,7 +190,7 @@ static int omap_mmc_setup_gpio_in(int gpio, const char *label)
 {
 	int ret;
 
-#ifndef CONFIG_DM_GPIO
+#if !CONFIG_IS_ENABLED(DM_GPIO)
 	if (!gpio_is_valid(gpio))
 		return -1;
 #endif
@@ -389,7 +396,6 @@ static void omap_hsmmc_set_timing(struct mmc *mmc)
 		break;
 	case MMC_LEGACY:
 	case MMC_HS:
-	case SD_LEGACY:
 	case UHS_SDR12:
 		val |= AC12_UHSMC_SDR12;
 		break;

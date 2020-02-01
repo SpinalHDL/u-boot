@@ -4,8 +4,10 @@
  */
 
 #include <common.h>
+#include <cpu_func.h>
 #include <cros_ec.h>
 #include <dm.h>
+#include <init.h>
 #include <led.h>
 #include <os.h>
 #include <asm/test.h>
@@ -54,6 +56,12 @@ int board_init(void)
 		led_default_state();
 
 	return 0;
+}
+
+int ft_board_setup(void *fdt, bd_t *bd)
+{
+	/* Create an arbitrary reservation to allow testing OF_BOARD_SETUP.*/
+	return fdt_add_mem_rsv(fdt, 0x00d02000, 0x4000);
 }
 
 #ifdef CONFIG_BOARD_LATE_INIT

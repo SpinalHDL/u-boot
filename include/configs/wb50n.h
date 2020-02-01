@@ -44,9 +44,6 @@
     (CONFIG_SYS_SDRAM_BASE + 4 * 1024 - GENERATED_GBL_DATA_SIZE)
 #endif
 
-#define CONFIG_SYS_MEMTEST_START    0x21000000
-#define CONFIG_SYS_MEMTEST_END      0x22000000
-
 /* NAND flash */
 #define CONFIG_SYS_MAX_NAND_DEVICE  1
 #define CONFIG_SYS_NAND_BASE        ATMEL_BASE_CS3
@@ -72,7 +69,6 @@
     "autostart=no\0"
 
 /* bootstrap + u-boot + env in nandflash */
-#define CONFIG_ENV_OFFSET_REDUND    0xC0000
 #define CONFIG_BOOTCOMMAND \
     "nand read 0x22000000 0x000e0000 0x500000; " \
     "bootm"

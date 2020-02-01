@@ -6,10 +6,13 @@
 #include <common.h>
 #include <clk.h>
 #include <dm.h>
+#include <malloc.h>
+#include <dm/device_compat.h>
 #include <dm/pinctrl.h>
 #include <errno.h>
 #include <asm/gpio.h>
 #include <asm/io.h>
+#include <linux/bitops.h>
 #include "../pinctrl/renesas/sh_pfc.h"
 
 #define GPIO_IOINTSEL	0x00	/* General IO/Interrupt Switching Register */
@@ -128,7 +131,7 @@ static int rcar_gpio_free(struct udevice *dev, unsigned offset)
 
 static const struct dm_gpio_ops rcar_gpio_ops = {
 	.request		= rcar_gpio_request,
-	.free			= rcar_gpio_free,
+	.rfree			= rcar_gpio_free,
 	.direction_input	= rcar_gpio_direction_input,
 	.direction_output	= rcar_gpio_direction_output,
 	.get_value		= rcar_gpio_get_value,

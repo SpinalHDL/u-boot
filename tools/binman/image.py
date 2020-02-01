@@ -5,8 +5,6 @@
 # Class for an image, the output of binman
 #
 
-from __future__ import print_function
-
 from collections import OrderedDict
 import fnmatch
 from operator import attrgetter
@@ -14,14 +12,14 @@ import os
 import re
 import sys
 
-from entry import Entry
-from etype import fdtmap
-from etype import image_header
-from etype import section
-import fdt
-import fdt_util
-import tools
-import tout
+from binman.entry import Entry
+from binman.etype import fdtmap
+from binman.etype import image_header
+from binman.etype import section
+from dtoc import fdt
+from dtoc import fdt_util
+from patman import tools
+from patman import tout
 
 class Image(section.Entry_section):
     """A Image, representing an output from binman
@@ -201,6 +199,8 @@ class Image(section.Entry_section):
         return entry
 
     def ReadData(self, decomp=True):
+        tout.Debug("Image '%s' ReadData(), size=%#x" %
+                   (self.GetPath(), len(self._data)))
         return self._data
 
     def GetListEntries(self, entry_paths):

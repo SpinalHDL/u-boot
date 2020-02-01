@@ -7,6 +7,8 @@
 #ifndef __CONFIG_KEYMILE_H
 #define __CONFIG_KEYMILE_H
 
+#include <linux/stringify.h>
+
 /*
  * Miscellaneous configurable options
  */
@@ -36,11 +38,6 @@
 #ifndef CONFIG_KM_DEF_ENV_BOOTPARAMS
 #define CONFIG_KM_DEF_ENV_BOOTPARAMS \
 	"actual_bank=0\0"
-#endif
-
-#ifndef CONFIG_KM_DEF_NETDEV
-#define CONFIG_KM_DEF_NETDEV	\
-	"netdev=eth0\0"
 #endif
 
 #ifndef CONFIG_KM_UBI_PARTITION_NAME_BOOT
@@ -168,7 +165,7 @@
 #ifndef CONFIG_KM_DEF_ENV
 #define CONFIG_KM_DEF_ENV	\
 	CONFIG_KM_DEF_ENV_BOOTPARAMS					\
-	CONFIG_KM_DEF_NETDEV						\
+	"netdev=" __stringify(CONFIG_KM_DEF_NETDEV) "\0"		\
 	CONFIG_KM_DEF_ENV_CPU						\
 	CONFIG_KM_DEF_ENV_BOOTTARGETS					\
 	CONFIG_KM_DEF_ENV_BOOTARGS					\

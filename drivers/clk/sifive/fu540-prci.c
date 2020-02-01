@@ -35,6 +35,8 @@
 #include <div64.h>
 #include <dm.h>
 #include <errno.h>
+#include <linux/delay.h>
+#include <linux/err.h>
 
 #include <linux/math64.h>
 #include <linux/clk/analogbits-wrpll-cln28hpc.h>

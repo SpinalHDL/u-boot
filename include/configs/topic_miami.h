@@ -15,10 +15,6 @@
 #include "zynq-common.h"
 
 /* Fixup settings */
-#undef CONFIG_ENV_SIZE
-#define CONFIG_ENV_SIZE			0x8000
-#undef CONFIG_ENV_OFFSET
-#define CONFIG_ENV_OFFSET		0x80000
 
 /* SPL settings */
 #undef CONFIG_SPL_ETH_SUPPORT
@@ -40,10 +36,6 @@
 /* FPGA commands that we don't use */
 
 /* Extras */
-#undef CONFIG_SYS_MEMTEST_START
-#define CONFIG_SYS_MEMTEST_START	0
-#undef CONFIG_SYS_MEMTEST_END
-#define CONFIG_SYS_MEMTEST_END	0x18000000
 
 /* Faster flash, ours may run at 108 MHz */
 #undef CONFIG_SPI_FLASH_WINBOND

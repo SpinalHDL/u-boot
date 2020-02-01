@@ -1,7 +1,6 @@
 #ifndef __ASM_ARM_SYSTEM_H
 #define __ASM_ARM_SYSTEM_H
 
-#include <common.h>
 #include <linux/compiler.h>
 #include <asm/barriers.h>
 
@@ -109,6 +108,8 @@
 #define SCTLR_EL1_MMU_DIS	(0)       /* MMU disabled                     */
 
 #ifndef __ASSEMBLY__
+
+struct pt_regs;
 
 u64 get_page_table_size(void);
 #define PGTABLE_SIZE	get_page_table_size()
@@ -254,6 +255,7 @@ void mmu_change_region_attr(phys_addr_t start, size_t size, u64 attrs);
 void smc_call(struct pt_regs *args);
 
 void __noreturn psci_system_reset(void);
+void __noreturn psci_system_reset2(u32 reset_level, u32 cookie);
 void __noreturn psci_system_off(void);
 
 #ifdef CONFIG_ARMV8_PSCI
@@ -482,6 +484,14 @@ enum dcache_option {
 	DCACHE_WRITEBACK = 0x1e,
 	DCACHE_WRITEALLOC = 0x16,
 };
+#endif
+
+#if defined(CONFIG_SYS_ARM_CACHE_WRITETHROUGH)
+#define DCACHE_DEFAULT_OPTION	DCACHE_WRITETHROUGH
+#elif defined(CONFIG_SYS_ARM_CACHE_WRITEALLOC)
+#define DCACHE_DEFAULT_OPTION	DCACHE_WRITEALLOC
+#elif defined(CONFIG_SYS_ARM_CACHE_WRITEBACK)
+#define DCACHE_DEFAULT_OPTION	DCACHE_WRITEBACK
 #endif
 
 /* Size of an MMU section */

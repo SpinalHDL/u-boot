@@ -13,12 +13,17 @@
 #include <common.h>
 #include <dm.h>
 #include <efi_loader.h>
+#include <hang.h>
+#include <init.h>
+#include <irq.h>
+#include <irq_func.h>
 #include <asm/control_regs.h>
 #include <asm/i8259.h>
 #include <asm/interrupt.h>
 #include <asm/io.h>
 #include <asm/lapic.h>
 #include <asm/processor-flags.h>
+#include <asm/ptrace.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -260,8 +265,11 @@ int interrupt_init(void)
 	struct udevice *dev;
 	int ret;
 
+	if (!ll_boot_init())
+		return 0;
+
 	/* Try to set up the interrupt router, but don't require one */
-	ret = uclass_first_device_err(UCLASS_IRQ, &dev);
+	ret = irq_first_device_type(X86_IRQT_BASE, &dev);
 	if (ret && ret != -ENODEV)
 		return ret;
 
@@ -291,8 +299,7 @@ int interrupt_init(void)
 	 * TODO(sjg@chromium.org): But we don't handle these correctly when
 	 * booted from EFI.
 	 */
-	if (ll_boot_init())
-		enable_interrupts();
+	enable_interrupts();
 #endif
 
 	return 0;

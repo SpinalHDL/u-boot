@@ -6,9 +6,12 @@
 #include <common.h>
 #include <dm.h>
 #include <env.h>
+#include <init.h>
+#include <log.h>
 #include <misc.h>
 #include <spl.h>
 #include <syscon.h>
+#include <u-boot/crc.h>
 #include <usb.h>
 #include <dm/pinctrl.h>
 #include <dm/uclass-internal.h>
@@ -48,7 +51,7 @@ static void setup_iodomain(void)
 static int setup_boottargets(void)
 {
 	const char *boot_device =
-		ofnode_get_chosen_prop("u-boot,spl-boot-device");
+		ofnode_read_chosen_string("u-boot,spl-boot-device");
 	char *env_default, *env;
 
 	if (!boot_device) {

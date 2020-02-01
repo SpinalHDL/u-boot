@@ -8,13 +8,18 @@
 #include <autoboot.h>
 #include <bootretry.h>
 #include <cli.h>
+#include <command.h>
 #include <console.h>
 #include <env.h>
 #include <fdtdec.h>
 #include <hash.h>
+#include <log.h>
+#include <malloc.h>
 #include <memalign.h>
 #include <menu.h>
 #include <post.h>
+#include <time.h>
+#include <linux/delay.h>
 #include <u-boot/sha256.h>
 #include <bootcount.h>
 

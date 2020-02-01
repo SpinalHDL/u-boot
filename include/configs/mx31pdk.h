@@ -71,8 +71,6 @@
  */
 
 /* memtest works on */
-#define CONFIG_SYS_MEMTEST_START	0x80000000
-#define CONFIG_SYS_MEMTEST_END		0x80010000
 
 /* default load address */
 #define CONFIG_SYS_LOAD_ADDR		0x81000000
@@ -94,9 +92,6 @@
 /*
  * environment organization
  */
-#define CONFIG_ENV_OFFSET		0x40000
-#define CONFIG_ENV_OFFSET_REDUND	0x60000
-#define CONFIG_ENV_SIZE			(128 * 1024)
 
 /*
  * NAND driver

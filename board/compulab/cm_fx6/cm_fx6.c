@@ -13,8 +13,10 @@
 #include <dwc_ahsata.h>
 #include <env.h>
 #include <fsl_esdhc_imx.h>
+#include <init.h>
 #include <miiphy.h>
 #include <mtd_node.h>
+#include <net.h>
 #include <netdev.h>
 #include <errno.h>
 #include <usb.h>
@@ -33,6 +35,7 @@
 #include <dm/platform_data/serial_mxc.h>
 #include <dm/device-internal.h>
 #include <jffs2/load_kernel.h>
+#include <linux/delay.h>
 #include "common.h"
 #include "../common/eeprom.h"
 #include "../common/common.h"
@@ -145,6 +148,11 @@ int board_video_skip(void)
 #else
 static inline void cm_fx6_setup_display(void) {}
 #endif /* CONFIG_VIDEO_IPUV3 */
+
+int ipu_displays_init(void)
+{
+	return board_video_skip();
+}
 
 #ifdef CONFIG_DWC_AHSATA
 static int cm_fx6_issd_gpios[] = {

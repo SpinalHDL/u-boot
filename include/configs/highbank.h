@@ -51,15 +51,11 @@
  * The DRAM is already setup, so do not touch the DT node later.
  */
 #define PHYS_SDRAM_1_SIZE		(4089 << 20)
-#define CONFIG_SYS_MEMTEST_START	0x100000
-#define CONFIG_SYS_MEMTEST_END		(PHYS_SDRAM_1_SIZE - 0x100000)
 
 /* Environment data setup
 */
 #define CONFIG_SYS_NVRAM_BASE_ADDR	0xfff88000	/* NVRAM base address */
 #define CONFIG_SYS_NVRAM_SIZE		0x8000		/* NVRAM size */
-#define CONFIG_ENV_SIZE			0x2000		/* Size of Environ */
-#define CONFIG_ENV_ADDR			CONFIG_SYS_NVRAM_BASE_ADDR
 
 #define CONFIG_SYS_SDRAM_BASE		0x00000000
 #define CONFIG_SYS_INIT_SP_ADDR		0x01000000

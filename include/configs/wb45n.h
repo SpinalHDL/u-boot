@@ -7,6 +7,7 @@
 #define __CONFIG_H__
 
 #include <asm/hardware.h>
+#include <linux/stringify.h>
 
 /* ARM asynchronous clock */
 #define CONFIG_SYS_AT91_SLOW_CLOCK  32768
@@ -61,14 +62,9 @@
 
 /* System */
 #define CONFIG_SYS_LOAD_ADDR        0x22000000	/* load address */
-#define CONFIG_SYS_MEMTEST_START    CONFIG_SYS_SDRAM_BASE
-#define CONFIG_SYS_MEMTEST_END      0x23e00000
 
 #ifdef CONFIG_SYS_USE_NANDFLASH
 /* bootstrap + u-boot + env + linux in nandflash */
-#define CONFIG_ENV_OFFSET           0xa0000
-#define CONFIG_ENV_OFFSET_REDUND    0xc0000
-#define CONFIG_ENV_SIZE             0x20000	/* 1 block = 128 kB */
 
 #define CONFIG_BOOTCOMMAND  "nand read 0x22000000 0xe0000 0x280000; " \
     "run _mtd; bootm"

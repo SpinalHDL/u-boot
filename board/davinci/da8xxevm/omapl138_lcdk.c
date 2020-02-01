@@ -11,6 +11,7 @@
 #include <common.h>
 #include <env.h>
 #include <i2c.h>
+#include <init.h>
 #include <net.h>
 #include <asm/arch/hardware.h>
 #include <asm/ti-common/davinci_nand.h>
@@ -342,7 +343,6 @@ static struct davinci_mmc mmc_sd0 = {
 	.reg_base = (struct davinci_mmc_regs *)DAVINCI_MMC_SD0_BASE,
 	.host_caps = MMC_MODE_4BIT,     /* DA850 supports only 4-bit SD/MMC */
 	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,
-	.version = MMC_CTLR_VERSION_2,
 };
 
 int board_mmc_init(bd_t *bis)
@@ -367,4 +367,13 @@ U_BOOT_DEVICE(omapl138_uart) = {
 	.name = "ns16550_serial",
 	.platdata = &serial_pdata,
 };
+
+U_BOOT_DEVICE(omapl138_mmc) = {
+	.name = "davinci_mmc",
+};
+
+void spl_board_init(void)
+{
+	davinci_configure_pin_mux(mmc0_pins, ARRAY_SIZE(mmc0_pins));
+}
 #endif

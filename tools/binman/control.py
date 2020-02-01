@@ -5,19 +5,15 @@
 # Creates binary images from input files controlled by a description
 #
 
-from __future__ import print_function
-
 from collections import OrderedDict
 import os
 import sys
-import tools
+from patman import tools
 
-import cbfs_util
-import command
-import elf
-from image import Image
-import state
-import tout
+from binman import cbfs_util
+from binman import elf
+from patman import command
+from patman import tout
 
 # List of images we plan to create
 # Make this global so that it can be referenced from tests
@@ -64,7 +60,7 @@ def WriteEntryDocs(modules, test_missing=None):
             to show as missing even if it is present. Should be set to None in
             normal use.
     """
-    from entry import Entry
+    from binman.entry import Entry
     Entry.WriteDocs(modules, test_missing)
 
 
@@ -113,6 +109,9 @@ def ReadEntry(image_fname, entry_path, decomp=True):
     Returns:
         data extracted from the entry
     """
+    global Image
+    from image import Image
+
     image = Image.FromFile(image_fname)
     entry = image.FindEntryPath(entry_path)
     return entry.ReadData(decomp)
@@ -335,8 +334,8 @@ def PrepareImagesAndDtbs(dtb_fname, select_images, update_fdt):
     """
     # Import these here in case libfdt.py is not available, in which case
     # the above help option still works.
-    import fdt
-    import fdt_util
+    from dtoc import fdt
+    from dtoc import fdt_util
     global images
 
     # Get the device tree ready by compiling it and copying the compiled
@@ -436,15 +435,16 @@ def ProcessImage(image, update_fdt, write_map, get_contents=True,
             for dtb_item in state.GetAllFdts():
                 dtb_item.Sync()
                 dtb_item.Flush()
+        image.WriteSymbols()
         sizes_ok = image.ProcessEntryContents()
         if sizes_ok:
             break
         image.ResetForPack()
+    tout.Info('Pack completed after %d pass(es)' % (pack_pass + 1))
     if not sizes_ok:
         image.Raise('Entries changed size after packing (tried %s passes)' %
                     passes)
 
-    image.WriteSymbols()
     image.BuildImage()
     if write_map:
         image.WriteMap()
@@ -459,6 +459,9 @@ def Binman(args):
     Args:
         args: Command line arguments Namespace object
     """
+    global Image
+    global state
+
     if args.full_help:
         pager = os.getenv('PAGER')
         if not pager:
@@ -468,29 +471,27 @@ def Binman(args):
         command.Run(pager, fname)
         return 0
 
-    if args.cmd == 'ls':
-        try:
-            tools.PrepareOutputDir(None)
-            ListEntries(args.image, args.paths)
-        finally:
-            tools.FinaliseOutputDir()
-        return 0
+    # Put these here so that we can import this module without libfdt
+    from image import Image
+    from binman import state
 
-    if args.cmd == 'extract':
+    if args.cmd in ['ls', 'extract', 'replace']:
         try:
+            tout.Init(args.verbosity)
             tools.PrepareOutputDir(None)
-            ExtractEntries(args.image, args.filename, args.outdir, args.paths,
-                           not args.uncompressed)
-        finally:
-            tools.FinaliseOutputDir()
-        return 0
+            if args.cmd == 'ls':
+                ListEntries(args.image, args.paths)
 
-    if args.cmd == 'replace':
-        try:
-            tools.PrepareOutputDir(None)
-            ReplaceEntries(args.image, args.filename, args.indir, args.paths,
-                           do_compress=not args.compressed,
-                           allow_resize=not args.fix_size, write_map=args.map)
+            if args.cmd == 'extract':
+                ExtractEntries(args.image, args.filename, args.outdir, args.paths,
+                               not args.uncompressed)
+
+            if args.cmd == 'replace':
+                ReplaceEntries(args.image, args.filename, args.indir, args.paths,
+                               do_compress=not args.compressed,
+                               allow_resize=not args.fix_size, write_map=args.map)
+        except:
+            raise
         finally:
             tools.FinaliseOutputDir()
         return 0
