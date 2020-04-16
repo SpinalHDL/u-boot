@@ -21,7 +21,7 @@ endif
 obj-y	+= interrupts.o
 obj-y	+= reset.o
 obj-y   += setjmp.o
-obj-$(CONFIG_SMP) += smp.o
+obj-$(CONFIG_$(SPL_)SMP) += smp.o
 obj-$(CONFIG_SPL_BUILD)	+= spl.o
 obj-y += ashldi3.o
 obj-y += lshrdi3.o
