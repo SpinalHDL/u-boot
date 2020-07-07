@@ -10,6 +10,7 @@
 #include <dm.h>
 #include <dm/lists.h>
 #include <errno.h>
+#include <log.h>
 #include <malloc.h>
 #include <fdtdec.h>
 #include <spi.h>

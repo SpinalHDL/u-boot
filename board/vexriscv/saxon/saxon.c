@@ -5,6 +5,8 @@
  */
 
 #include <common.h>
+#include <image.h>
+#include <log.h>
 #include <spl.h>
 
 int board_init(void)

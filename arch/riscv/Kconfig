@@ -218,7 +218,6 @@ config NR_CPUS
 config SBI_IPI
 	bool
 	default y if RISCV_SMODE || SPL_RISCV_SMODE
-	depends on SMP
 
 config XIP
 	bool "XIP mode"

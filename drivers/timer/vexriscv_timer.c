@@ -7,6 +7,7 @@
 #include <asm/io.h>
 #include <dm.h>
 #include <clk.h>
+#include <log.h>
 #include <timer.h>
 
 struct vexriscv_platdata {
