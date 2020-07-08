@@ -10,7 +10,6 @@
 #include <linux/sizes.h>
 
 /* assuming Text Base is not bottom of memory for INIT_SP to work */
-#define CONFIG_SBI_V01
 #define CONFIG_SYS_LOAD_ADDR CONFIG_SYS_TEXT_BASE
 #define CONFIG_SYS_INIT_SP_ADDR CONFIG_SYS_LOAD_ADDR
 #define CONFIG_SYS_MALLOC_LEN SZ_256K
