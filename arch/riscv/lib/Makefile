@@ -16,7 +16,7 @@ obj-$(CONFIG_ANDES_PLIC) += andes_plic.o
 obj-$(CONFIG_ANDES_PLMT) += andes_plmt.o
 else
 obj-$(CONFIG_RISCV_RDTIME) += rdtime.o
-obj-$(CONFIG_SBI_IPI) += sbi_ipi.o
+obj-$(CONFIG_SBI_IPI) += sbi_ipi.o sbi.o
 endif
 obj-y	+= interrupts.o
 obj-y	+= reset.o

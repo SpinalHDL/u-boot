@@ -249,7 +249,6 @@ config SBI_IPI
 	bool
 	depends on SBI
 	default y if RISCV_SMODE || SPL_RISCV_SMODE
-	depends on SMP
 
 config XIP
 	bool "XIP mode"
